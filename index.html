@@ -4,770 +4,399 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArchOS Portfolio - Sistema de Portafolio</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: url('https://wallpapers.com/images/hd/arch-linux-1920-x-1080-wallpaper-6ordldys30y1qxv7.jpg') center/cover fixed;
-            color: #e6e6e6;
-            overflow: hidden;
-            height: 100vh;
-        }
-        
-        .desktop {
-            height: 100vh;
-            position: relative;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%);
-        }
-        
-        .desktop-icons {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: calc(100% - 40px);
-            height: calc(100% - 90px);
-            z-index: 10;
-        }
-        
-        .desktop-icon {
-            width: 80px;
-            height: 90px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 8px;
-            border-radius: 8px;
-            position: absolute;
-            user-select: none;
-        }
-        
-        .desktop-icon:hover {
-            background: rgba(120, 119, 198, 0.2);
-            transform: scale(1.05);
-        }
-        
-        .desktop-icon.dragging {
-            z-index: 1000;
-            transform: scale(1.1);
-            opacity: 0.8;
-            transition: none;
-        }
-        
-        .icon-image {
-            font-size: 32px;
-            margin-bottom: 8px;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-        }
-        
-        .icon-label {
-            font-size: 12px;
-            text-align: center;
-            color: #e6e6e6;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-            font-weight: 500;
-        }
-        
-        .taskbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background: rgba(15, 15, 35, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(120, 119, 198, 0.3);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-        }
-        
-        .arch-logo {
-            width: 30px;
-            height: 30px;
-            margin-right: 20px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .arch-logo:hover {
-            transform: scale(1.1);
-        }
-        
-        .taskbar-apps {
-            display: flex;
-            gap: 5px;
-            flex: 1;
-        }
-        
-        .taskbar-app {
-            background: rgba(120, 119, 198, 0.2);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 6px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            max-width: 150px;
-        }
-        
-        .taskbar-app:hover {
-            background: rgba(120, 119, 198, 0.4);
-        }
-        
-        .taskbar-app.active {
-            background: rgba(120, 119, 198, 0.5);
-            border-color: #7877c6;
-        }
-        
-        .taskbar-app-icon {
-            font-size: 14px;
-        }
-        
-        .taskbar-app-title {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .system-info {
-            font-size: 12px;
-            color: #7877c6;
-        }
-        
-        .start-menu {
-            position: fixed;
-            bottom: 60px;
-            left: 20px;
-            width: 280px;
-            background: rgba(15, 15, 35, 0.95);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            display: none;
-            z-index: 2000;
-        }
-        
-        .start-menu.active {
-            display: block;
-            animation: slideUp 0.3s ease;
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .start-menu-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(120, 119, 198, 0.2);
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            color: #7877c6;
-        }
-        
-        .start-menu-items {
-            padding: 10px 0;
-        }
-        
-        .start-menu-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #e6e6e6;
-        }
-        
-        .start-menu-item:hover {
-            background: rgba(120, 119, 198, 0.2);
-        }
-        
-        .start-menu-icon {
-            margin-right: 12px;
-            font-size: 16px;
-        }
-        
-        .start-menu-separator {
-            height: 1px;
-            background: rgba(120, 119, 198, 0.2);
-            margin: 5px 20px;
-        }
-        
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .notification {
-            background: rgba(15, 15, 35, 0.95);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 300px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: slideInRight 0.5s ease;
-        }
-        
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .notification-title {
-            font-weight: bold;
-            color: #7877c6;
-            margin-bottom: 5px;
-        }
-        
-        .notification-message {
-            font-size: 14px;
-            color: #e6e6e6;
-        }
-        
-        .window {
-            position: absolute;
-            background: rgba(15, 15, 35, 0.95);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 12px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            display: none;
-            overflow: hidden;
-        }
-        
-        .window.active {
-            display: block;
-        }
-        
-        .window-header {
-            height: 40px;
-            background: rgba(120, 119, 198, 0.1);
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            cursor: move;
-            border-bottom: 1px solid rgba(120, 119, 198, 0.2);
-        }
-        
-        .window-title {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .window-controls {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .control-btn {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .control-btn:hover {
-            opacity: 0.8;
-            transform: scale(1.1);
-        }
-        
-        .close { background: #ff5f57; }
-        .minimize { background: #ffbd2e; }
-        .maximize { background: #28ca42; }
-        
-        .window.minimized {
-            display: none !important;
-        }
-        
-        .window-content {
-            padding: 20px;
-            height: calc(100% - 40px);
-            overflow-y: auto;
-        }
-        
-        .terminal {
-            background: #000;
-            color: #00ff00;
-            font-family: 'JetBrains Mono', monospace;
-            padding: 15px;
-            height: 400px;
-            overflow-y: auto;
-            border-radius: 8px;
-        }
-        
-        .terminal-line {
-            margin-bottom: 5px;
-        }
-        
-        .prompt {
-            color: #7877c6;
-        }
-        
-        .terminal-input {
-            background: transparent;
-            border: none;
-            color: #00ff00;
-            font-family: inherit;
-            outline: none;
-            width: 100%;
-        }
-        
-        .project-card {
-            background: rgba(120, 119, 198, 0.1);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .project-card:hover {
-            background: rgba(120, 119, 198, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .projects-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .project-gallery-card {
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .project-gallery-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(120, 119, 198, 0.3);
-        }
-        
-        .project-image-container {
-            position: relative;
-            height: 200px;
-            overflow: hidden;
-            border-radius: 12px;
-            border: 1px solid rgba(120, 119, 198, 0.3);
-        }
-        
-        .project-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        
-        .project-placeholder {
-            width: 100%;
-            height: 100%;
-            background: rgba(120, 119, 198, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #7877c6;
-        }
-        
-        .project-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 15, 35, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: all 0.3s ease;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .project-image-container:hover .project-overlay {
-            opacity: 1;
-        }
-        
-        .project-image-container:hover .project-image {
-            transform: scale(1.1);
-        }
-        
-        .project-overlay h3 {
-            color: #7877c6;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .project-overlay p {
-            color: #e6e6e6;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        
-        .project-tags {
-            margin-bottom: 15px;
-        }
-        
-        .project-btn {
-            background: linear-gradient(135deg, #7877c6, #ff77c6);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .project-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(120, 119, 198, 0.4);
-        }
-        
-        .price-card {
-            background: linear-gradient(135deg, rgba(120, 119, 198, 0.2) 0%, rgba(255, 119, 198, 0.1) 100%);
-            border: 1px solid rgba(120, 119, 198, 0.4);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .price-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(120, 119, 198, 0.3);
-        }
-        
-        .chat-container {
-            height: 300px;
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.2);
-        }
-        
-        .chat-input-container {
-            padding: 10px;
-            border-top: 1px solid rgba(120, 119, 198, 0.3);
-        }
-        
-        .chat-input {
-            width: 100%;
-            background: rgba(120, 119, 198, 0.1);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: #e6e6e6;
-            font-family: inherit;
-        }
-        
-        .message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background: rgba(120, 119, 198, 0.3);
-            margin-left: auto;
-        }
-        
-        .bot-message {
-            background: rgba(255, 119, 198, 0.2);
-        }
-        
-        .wallpaper-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        .wallpaper-option {
-            aspect-ratio: 16/9;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .wallpaper-option:hover {
-            border-color: #7877c6;
-            transform: scale(1.05);
-        }
-        
-        .skill-tag {
-            display: inline-block;
-            background: rgba(120, 119, 198, 0.3);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin: 2px;
-        }
-        
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        .contact-card {
-            background: rgba(120, 119, 198, 0.1);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .contact-card:hover {
-            background: rgba(120, 119, 198, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .contact-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        
-        .contact-card h4 {
-            color: #7877c6;
-            margin-bottom: 8px;
-        }
-        
-        .contact-card p {
-            color: #e6e6e6;
-            margin-bottom: 15px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
-        .contact-btn {
-            background: linear-gradient(135deg, #7877c6, #ff77c6);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .contact-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(120, 119, 198, 0.4);
-        }
-        
-        .news-article {
-            background: rgba(120, 119, 198, 0.1);
-            border: 1px solid rgba(120, 119, 198, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .news-article:hover {
-            background: rgba(120, 119, 198, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .news-source {
-            background: rgba(255, 119, 198, 0.3);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #ff77c6;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        
-        .news-title {
-            color: #7877c6;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .news-description {
-            color: #e6e6e6;
-            margin-bottom: 10px;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        .news-date {
-            color: #7877c6;
-            font-size: 12px;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .floating {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes loadingAnimation {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-        
-        .loading-bar {
-            width: 100%;
-            height: 4px;
-            background: rgba(120, 119, 198, 0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #7877c6, #ff77c6);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    
 </head>
 <body>
-    <div class="desktop" id="desktop">
-        <!-- Iconos del Escritorio -->
-        <div class="desktop-icons" id="desktop-icons">
-            <div class="desktop-icon" ondblclick="openWindow('about-window')" title="Información personal y habilidades" style="top: 0px; left: 0px;">
-                <div class="icon-image">📋</div>
-                <div class="icon-label">Sobre Mí</div>
+    <!-- Mobile Interface -->
+    <div class="mobile-interface" id="mobile-interface">
+        <div class="mobile-header">
+            <h1>🏠 Diego Portfolio</h1>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav" id="mobile-nav">
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-about')">
+                <span class="mobile-nav-icon">📋</span>
+                <div class="mobile-nav-title">Sobre Mí</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('projects-window')" title="Proyectos completados y en desarrollo" style="top: 0px; left: 100px;">
-                <div class="icon-image">🛠️</div>
-                <div class="icon-label">Proyectos</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-projects')">
+                <span class="mobile-nav-icon">🛠️</span>
+                <div class="mobile-nav-title">Proyectos</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('future-window')" title="Roadmap y proyectos futuros" style="top: 0px; left: 200px;">
-                <div class="icon-image">🚀</div>
-                <div class="icon-label">Futuros</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-future')">
+                <span class="mobile-nav-icon">🚀</span>
+                <div class="mobile-nav-title">Futuros</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('terminal-window')" title="Terminal interactiva con comandos" style="top: 0px; left: 300px;">
-                <div class="icon-image">💻</div>
-                <div class="icon-label">Terminal</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-terminal')">
+                <span class="mobile-nav-icon">💻</span>
+                <div class="mobile-nav-title">Terminal</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('wallpaper-window')" title="Cambiar tema del escritorio" style="top: 110px; left: 0px;">
-                <div class="icon-image">🎨</div>
-                <div class="icon-label">Temas</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-chat')">
+                <span class="mobile-nav-icon">🤖</span>
+                <div class="mobile-nav-title">IA Support</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('plans-window')" title="Planes y precios de servicios" style="top: 110px; left: 100px;">
-                <div class="icon-image">💰</div>
-                <div class="icon-label">Servicios</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-testimonials')">
+                <span class="mobile-nav-icon">⭐</span>
+                <div class="mobile-nav-title">Testimonios</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('chat-window')" title="Asistente IA para consultas" style="top: 110px; left: 200px;">
-                <div class="icon-image">🤖</div>
-                <div class="icon-label">IA Support</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-cv')">
+                <span class="mobile-nav-icon">📄</span>
+                <div class="mobile-nav-title">Mi CV</div>
             </div>
-            <div class="desktop-icon" ondblclick="openWindow('testimonials-window')" title="Testimonios de clientes" style="top: 110px; left: 300px;">
-                <div class="icon-image">⭐</div>
-                <div class="icon-label">Testimonios</div>
-            </div>
-            <div class="desktop-icon" ondblclick="openWindow('blog-window')" title="Blog de tecnología y noticias" style="top: 220px; left: 0px;">
-                <div class="icon-image">📰</div>
-                <div class="icon-label">Tech Blog</div>
-            </div>
-            <div class="desktop-icon" ondblclick="openWindow('contact-window')" title="Información de contacto" style="top: 220px; left: 100px;">
-                <div class="icon-image">📞</div>
-                <div class="icon-label">Contacto</div>
+            <div class="mobile-nav-item" onclick="showMobileContent('mobile-contact')">
+                <span class="mobile-nav-icon">📞</span>
+                <div class="mobile-nav-title">Contacto</div>
             </div>
         </div>
 
-        <!-- Tutorial/Bienvenida -->
-        <div class="window" id="welcome-window" style="width: 600px; height: 500px; top: 100px; left: 50%; transform: translateX(-50%);">
-            <div class="window-header">
-                <span class="window-title">🎉 Bienvenido al Portafolio de Diego</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('welcome-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('welcome-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('welcome-window')"></div>
+        <!-- Mobile About Content -->
+        <div class="mobile-content" id="mobile-about">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <div class="mobile-card">
+                <h2 style="color: #7877c6; margin-bottom: 15px; text-align: center;">👋 ¡Hola! Soy Diego</h2>
+                <p style="margin-bottom: 15px;">Tengo 19 años y estoy estudiando Ingeniería en Sistemas. Soy un apasionado desarrollador con experiencia en múltiples tecnologías y un gran interés en la Web3, criptomonedas e inteligencia artificial.</p>
+                
+                <h3 style="color: #ff77c6; margin: 20px 0 10px;">💻 Lenguajes:</h3>
+                <div style="margin-bottom: 15px;">
+                    <span class="mobile-skill-tag">🦀 Rust</span>
+                    <span class="mobile-skill-tag">☕ Java</span>
+                    <span class="mobile-skill-tag">🔷 C#</span>
+                    <span class="mobile-skill-tag">⚡ C</span>
+                    <span class="mobile-skill-tag">🌐 HTML/CSS/JS</span>
+                </div>
+                
+                <h3 style="color: #ff77c6; margin: 20px 0 10px;">🛠️ Herramientas:</h3>
+                <div style="margin-bottom: 15px;">
+                    <span class="mobile-skill-tag">🎯 Visual Studio</span>
+                    <span class="mobile-skill-tag">⚡ Cursor</span>
+                    <span class="mobile-skill-tag">☕ NetBeans</span>
+                    <span class="mobile-skill-tag">🔧 Hardware</span>
+                </div>
+                
+                <h3 style="color: #ff77c6; margin: 20px 0 10px;">🏆 Certificaciones:</h3>
+                <div style="margin-bottom: 15px;">
+                    <span class="mobile-skill-tag">☕ Java - Metaphorce</span>
+                    <span class="mobile-skill-tag">🔧 Mantenimiento PC</span>
                 </div>
             </div>
-            <div class="window-content">
-                <div class="floating">
-                    <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">¡Hola! Soy Diego 👋</h2>
+        </div>
+
+        <!-- Mobile Projects Content -->
+        <div class="mobile-content" id="mobile-projects">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">🎯 Galería de Proyectos</h2>
+            
+            <div class="mobile-card" style="text-align: center;">
+                <img src="https://drive.google.com/uc?export=view&id=1nTBU2DALt7i3wPMmCXxZ99Ijb8Mz2-hL" alt="Cafetería Torogoz" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; font-size: 48px; margin-bottom: 15px; color: #7877c6;">☕</div>
+                <h4 style="color: #7877c6;">Cafetería Torogoz</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Página promocional para cafetería en León, GTO. Diseño moderno y responsive.</p>
+                <div style="margin: 10px 0;">
+                    <span class="mobile-skill-tag">HTML</span>
+                    <span class="mobile-skill-tag">CSS</span>
+                    <span class="mobile-skill-tag">JavaScript</span>
+                </div>
+                <button onclick="window.open('https://cryptocapi.github.io/torogoz-restaurant', '_blank')" class="mobile-btn">Ver Sitio 🚀</button>
+            </div>
+            
+            <div class="mobile-card" style="text-align: center;">
+                <img src="https://drive.google.com/uc?export=view&id=1Xks7R1uIWtvOWJD0hqZB8NAeT_sCOXsV" alt="Luis Macías SmartFit" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; font-size: 48px; margin-bottom: 15px; color: #7877c6;">💪</div>
+                <h4 style="color: #7877c6;">SmartFit Luis Macías</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Portafolio para entrenador personal con sistema de contacto.</p>
+                <div style="margin: 10px 0;">
+                    <span class="mobile-skill-tag">Fitness</span>
+                    <span class="mobile-skill-tag">Portfolio</span>
+                    <span class="mobile-skill-tag">Professional</span>
+                </div>
+                <button onclick="window.open('https://cryptocapi.github.io/luismacias', '_blank')" class="mobile-btn">Ver Sitio 🚀</button>
+            </div>
+            
+            <div class="mobile-card" style="text-align: center;">
+                <img src="https://drive.google.com/uc?export=view&id=124E1zZfOMA9B22sjP8fo4_alRK3ka3cz" alt="Portafolio Demian" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; font-size: 48px; margin-bottom: 15px; color: #7877c6;">🎨</div>
+                <h4 style="color: #7877c6;">Portafolio Demian</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Portafolio profesional para artista visual con galería interactiva.</p>
+                <div style="margin: 10px 0;">
+                    <span class="mobile-skill-tag">Portfolio</span>
+                    <span class="mobile-skill-tag">Responsive</span>
+                    <span class="mobile-skill-tag">UI/UX</span>
+                </div>
+                <button onclick="window.open('https://cryptocapi.github.io/portafoliodemian', '_blank')" class="mobile-btn">Ver Sitio 🚀</button>
+            </div>
+            
+            <div class="mobile-card" style="text-align: center;">
+                <img src="https://drive.google.com/uc?export=view&id=1VQpFB4RmGp32iCpvCscw6NZwDMsCmvuH" alt="Entrenamiento Alejandra" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; font-size: 48px; margin-bottom: 15px; color: #7877c6;">🏋️</div>
+                <h4 style="color: #7877c6;">Entrenamiento Alejandra</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Página de entrenamiento personalizado con sistema de contacto directo.</p>
+                <div style="margin: 10px 0;">
+                    <span class="mobile-skill-tag">Fitness</span>
+                    <span class="mobile-skill-tag">Personal</span>
+                    <span class="mobile-skill-tag">Training</span>
+                </div>
+                <button onclick="window.open('https://cryptocapi.github.io/Entrenamiento-Personalizado-Alejandra', '_blank')" class="mobile-btn">Ver Sitio 🚀</button>
+            </div>
+            
+            <div class="mobile-card" style="text-align: center;">
+                <img src="https://drive.google.com/uc?export=view&id=1GVG1hNRZyPObacyZ9NswJzousiZ3ktaJ" alt="Estructura de Datos" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display: none; font-size: 48px; margin-bottom: 15px; color: #7877c6;">📊</div>
+                <h4 style="color: #7877c6;">Página Estructura de Datos</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Proyecto académico sobre estructuras de datos con ejemplos interactivos.</p>
+                <div style="margin: 10px 0;">
+                    <span class="mobile-skill-tag">Academic</span>
+                    <span class="mobile-skill-tag">Educational</span>
+                    <span class="mobile-skill-tag">Interactive</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Future Projects Content -->
+        <div class="mobile-content" id="mobile-future">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #ff77c6; margin-bottom: 20px; text-align: center;">🚀 Proyectos Futuros</h2>
+            
+            <div class="mobile-card">
+                <h4 style="color: #7877c6;">🦀 Tokens en Rust</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Desarrollo de tokens de criptomonedas usando Rust para diferentes redes blockchain.</p>
+                <div class="loading-bar">
+                    <div class="loading-progress" style="width: 25%;"></div>
+                </div>
+            </div>
+            
+            <div class="mobile-card">
+                <h4 style="color: #7877c6;">🇲🇽 Red Social Mexicana</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Proyecto sorpresa: Una red social enfocada en la comunidad mexicana. ¡Mantente atento!</p>
+                <div class="loading-bar">
+                    <div class="loading-progress" style="width: 40%;"></div>
+                </div>
+            </div>
+            
+            <div class="mobile-card">
+                <h4 style="color: #7877c6;">🌐 Expansión Web3</h4>
+                <p style="font-size: 14px; margin: 8px 0;">Profundizando en tecnologías Web3 y desarrollo de aplicaciones descentralizadas.</p>
+                <div class="loading-bar">
+                    <div class="loading-progress" style="width: 20%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Terminal Content -->
+        <div class="mobile-content" id="mobile-terminal">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <div class="mobile-terminal" id="mobile-terminal-content">
+                <div class="terminal-line">DiegoOS Portfolio Terminal v1.0</div>
+                <div class="terminal-line">Escribe 'help' para ver comandos disponibles</div>
+                <div class="terminal-line"></div>
+                <div class="terminal-line">
+                    <span class="prompt">[diego@portfolio ~]$ </span>
+                    <input type="text" class="mobile-input" id="mobile-terminal-input" placeholder="Escribe un comando..." style="background: transparent; border: none; color: #00ff00; width: 100%; margin-top: 5px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Chat Content -->
+        <div class="mobile-content" id="mobile-chat">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">🤖 Asistente IA</h2>
+            <div class="mobile-chat">
+                <div class="mobile-chat-messages" id="mobile-chat-messages">
+                    <div class="message bot-message">
+                        ¡Hola! Soy el asistente IA del portafolio. ¿En qué puedo ayudarte hoy? Puedo responder sobre proyectos, tecnologías o servicios.
+                    </div>
+                </div>
+                <div class="mobile-chat-input">
+                    <input type="text" class="mobile-input" id="mobile-chat-input" placeholder="Escribe tu pregunta...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Testimonials Content -->
+        <div class="mobile-content" id="mobile-testimonials">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">💬 Testimonios</h2>
+            
+            <div class="mobile-testimonial">
+                <div class="mobile-testimonial-header">
+                    <div class="mobile-testimonial-avatar">💪</div>
+                    <div>
+                        <h4 style="color: #7877c6; margin: 0;">Alejandra</h4>
+                        <p style="color: #ff77c6; margin: 0; font-size: 14px;">Entrenadora Personal</p>
+                    </div>
+                </div>
+                <p style="font-style: italic; margin-bottom: 10px;">"Diego creó mi página web profesional de entrenamiento personalizado. El diseño es moderno y funcional, exactamente lo que necesitaba para mostrar mis servicios. ¡Muy recomendado!"</p>
+                <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+            </div>
+            
+            <div class="mobile-testimonial">
+                <div class="mobile-testimonial-header">
+                    <div class="mobile-testimonial-avatar">🏋️</div>
+                    <div>
+                        <h4 style="color: #ff77c6; margin: 0;">Luis Macías</h4>
+                        <p style="color: #7877c6; margin: 0; font-size: 14px;">Entrenador SmartFit</p>
+                    </div>
+                </div>
+                <p style="font-style: italic; margin-bottom: 10px;">"Excelente trabajo en mi portafolio profesional. Diego entendió perfectamente lo que necesitaba para destacar como entrenador. La página es responsive y se ve increíble en todos los dispositivos."</p>
+                <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+            </div>
+            
+            <div class="mobile-testimonial">
+                <div class="mobile-testimonial-header">
+                    <div class="mobile-testimonial-avatar">🎨</div>
+                    <div>
+                        <h4 style="color: #7877c6; margin: 0;">Demian Tenorio</h4>
+                        <p style="color: #00ff00; margin: 0; font-size: 14px;">Artista Visual</p>
+                    </div>
+                </div>
+                <p style="font-style: italic; margin-bottom: 10px;">"Mi portafolio artístico quedó espectacular. Diego supo capturar mi estilo y crear una experiencia visual única. La navegación es intuitiva y el diseño refleja perfectamente mi trabajo."</p>
+                <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+            </div>
+            
+            <div class="mobile-testimonial">
+                <div class="mobile-testimonial-header">
+                    <div class="mobile-testimonial-avatar">☕</div>
+                    <div>
+                        <h4 style="color: #ff77c6; margin: 0;">Lilian Martínez</h4>
+                        <p style="color: #ffbd2e; margin: 0; font-size: 14px;">Propietaria Cafetería Torogoz</p>
+                    </div>
+                </div>
+                <p style="font-style: italic; margin-bottom: 10px;">"La página de mi cafetería superó todas mis expectativas. Diego creó un sitio que refleja la calidez de nuestro lugar y ha ayudado a atraer más clientes. ¡Profesional y creativo!"</p>
+                <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+            </div>
+        </div>
+
+        <!-- Mobile CV Content -->
+        <div class="mobile-content" id="mobile-cv">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">📄 Mi CV</h2>
+            
+            <div class="mobile-cv-buttons">
+                <button onclick="window.open('https://drive.google.com/file/d/1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9/view?usp=sharing', '_blank')" class="mobile-btn">
+                    📖 Ver PDF
+                </button>
+                <button onclick="window.open('https://drive.google.com/uc?export=download&id=1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9', '_blank')" class="mobile-btn">
+                    💾 Descargar
+                </button>
+            </div>
+            
+            <div class="mobile-cv-section">
+                <h3 style="color: #7877c6; margin-bottom: 15px;">👤 Información Personal</h3>
+                <p><strong>Nombre:</strong> Diego Mancera</p>
+                <p><strong>Edad:</strong> 19 años</p>
+                <p><strong>Email:</strong> diegomancera.dev@gmail.com</p>
+                <p><strong>Teléfono:</strong> 5645049448</p>
+                <p><strong>Ubicación:</strong> León, Guanajuato, México</p>
+            </div>
+            
+            <div class="mobile-cv-section">
+                <h3 style="color: #ff77c6; margin-bottom: 15px;">🎓 Educación</h3>
+                <p><strong>Ingeniería en Sistemas Computacionales</strong><br>
+                Universidad Tecnológica de León (En curso)<br>
+                <em>2023 - Presente</em></p>
+            </div>
+            
+            <div class="mobile-cv-section">
+                <h3 style="color: #7877c6; margin-bottom: 15px;">💼 Experiencia</h3>
+                <p><strong>Desarrollador Web Freelance</strong><br>
+                <em>2023 - Presente</em><br>
+                • Desarrollo de páginas web para pequeños negocios<br>
+                • Creación de portafolios profesionales</p>
+            </div>
+            
+            <div class="mobile-cv-section">
+                <h3 style="color: #ff77c6; margin-bottom: 15px;">🏆 Certificaciones</h3>
+                <p>• <strong>Java Programming</strong> - Metaphorce (2023)</p>
+                <p>• <strong>Mantenimiento PC</strong> - CECATI (2022)</p>
+            </div>
+        </div>
+
+        <!-- Mobile Contact Content -->
+        <div class="mobile-content" id="mobile-contact">
+            <div class="mobile-back-btn" onclick="showMobileNav()">
+                ← Volver al menú
+            </div>
+            <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">¡Conectemos! 🚀</h2>
+            
+            <div class="mobile-contact-grid">
+                <div class="mobile-contact-item">
+                    <div class="mobile-contact-icon">📧</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">Email</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-size: 14px;">diegomancera.dev@gmail.com</p>
+                    <button onclick="window.open('mailto:diegomancera.dev@gmail.com')" class="mobile-btn">Enviar Email</button>
                 </div>
                 
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="color: #ff77c6; margin-bottom: 15px;">🚀 Cómo navegar mi portafolio:</h3>
-                    <ul style="line-height: 1.8;">
-                        <li><strong>Doble clic</strong> en los iconos del escritorio para abrir ventanas</li>
-                        <li><strong>Arrastra</strong> las ventanas desde la barra superior</li>
-                        <li><strong>Arrastra los iconos</strong> para reorganizar tu escritorio</li>
-                        <li><strong>Clic en el logo Arch</strong> para abrir el menú de inicio</li>
-                        <li><strong>Ventanas abiertas</strong> aparecen en la barra de tareas</li>
-                        <li><strong>Terminal interactiva</strong> - escribe 'help' para comandos</li>
-                    </ul>
+                <div class="mobile-contact-item">
+                    <div class="mobile-contact-icon">💬</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">WhatsApp</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-size: 14px;">5645049448</p>
+                    <button onclick="window.open('https://wa.me/525645049448', '_blank')" class="mobile-btn">Enviar Mensaje</button>
                 </div>
                 
-                <div style="background: rgba(255, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4 style="color: #7877c6; margin-bottom: 10px;">💡 Recomendaciones:</h4>
-                    <p>• Comienza con <strong>"Sobre Mí"</strong> para conocerme</p>
-                    <p>• Revisa mis <strong>"Proyectos"</strong> reales</p>
-                    <p>• Usa el <strong>"Chat IA"</strong> para preguntas</p>
-                    <p>• Explora la <strong>"Terminal"</strong> para comandos</p>
-                    <p>• Lee las <strong>"Noticias Tech"</strong> en tiempo real</p>
+                <div class="mobile-contact-item">
+                    <div class="mobile-contact-icon">🐙</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">GitHub</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-size: 14px;">CryptoCapi</p>
+                    <button onclick="window.open('https://github.com/CryptoCapi', '_blank')" class="mobile-btn">Ver Perfil</button>
                 </div>
-                
-                <div style="text-align: center;">
-                    <button onclick="startTour()" style="background: linear-gradient(135deg, #7877c6, #ff77c6); border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-right: 10px;">
-                        🎯 Tour Guiado
-                    </button>
-                    <button onclick="closeWindow('welcome-window')" style="background: rgba(120, 119, 198, 0.3); border: 1px solid #7877c6; padding: 12px 24px; border-radius: 8px; color: #e6e6e6; cursor: pointer;">
-                        ✨ Explorar Libre
-                    </button>
-                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="desktop" id="desktop">
+        <!-- Iconos del Escritorio -->
+        <div class="desktop-icons" id="desktop-icons">
+            <div class="desktop-icon" ondblclick="openWindow('about-window')" style="top: 0px; left: 0px;">
+                <div class="icon-image">📋</div>
+                <div class="icon-label">Sobre Mí</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('projects-window')" style="top: 0px; left: 100px;">
+                <div class="icon-image">🛠️</div>
+                <div class="icon-label">Proyectos</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('future-window')" style="top: 0px; left: 200px;">
+                <div class="icon-image">🚀</div>
+                <div class="icon-label">Futuros</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('terminal-window')" style="top: 0px; left: 300px;">
+                <div class="icon-image">💻</div>
+                <div class="icon-label">Terminal</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('chat-window')" style="top: 110px; left: 0px;">
+                <div class="icon-image">🤖</div>
+                <div class="icon-label">IA Support</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('testimonials-window')" style="top: 110px; left: 100px;">
+                <div class="icon-image">⭐</div>
+                <div class="icon-label">Testimonios</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('cv-window')" style="top: 110px; left: 200px;">
+                <div class="icon-image">📄</div>
+                <div class="icon-label">Mi CV</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('contact-window')" style="top: 110px; left: 300px;">
+                <div class="icon-image">📞</div>
+                <div class="icon-label">Contacto</div>
             </div>
         </div>
 
         <!-- Menú de Inicio -->
         <div class="start-menu" id="start-menu">
             <div class="start-menu-header">
-                <img src="https://lignux.com/wp-content/uploads/2016/06/arch.png" alt="Arch" style="width: 24px; height: 24px; margin-right: 10px;" onerror="this.style.display='none';">
                 <span>Diego Portfolio</span>
             </div>
             <div class="start-menu-items">
@@ -787,192 +416,21 @@
                     <span class="start-menu-icon">💻</span>
                     <span>Terminal</span>
                 </div>
-                <div class="start-menu-item" onclick="openWindow('testimonials-window'); toggleStartMenu()">
-                    <span class="start-menu-icon">⭐</span>
-                    <span>Testimonios</span>
-                </div>
-                <div class="start-menu-item" onclick="openWindow('blog-window'); toggleStartMenu()">
-                    <span class="start-menu-icon">📰</span>
-                    <span>Tech Blog</span>
-                </div>
-                <div class="start-menu-item" onclick="openWindow('contact-window'); toggleStartMenu()">
-                    <span class="start-menu-icon">📞</span>
-                    <span>Contacto</span>
-                </div>
                 <div class="start-menu-item" onclick="openWindow('chat-window'); toggleStartMenu()">
                     <span class="start-menu-icon">🤖</span>
                     <span>IA Support</span>
                 </div>
-                <div class="start-menu-separator"></div>
-                <div class="start-menu-item" onclick="openWindow('wallpaper-window'); toggleStartMenu()">
-                    <span class="start-menu-icon">🎨</span>
-                    <span>Configuración</span>
+                <div class="start-menu-item" onclick="openWindow('testimonials-window'); toggleStartMenu()">
+                    <span class="start-menu-icon">⭐</span>
+                    <span>Testimonios</span>
                 </div>
-            </div>
-        </div>
-
-        <!-- Sistema de Notificaciones -->
-        <div class="notification-container" id="notification-container"></div>
-
-        <!-- Ventana Testimonios -->
-        <div class="window" id="testimonials-window" style="width: 600px; height: 550px; top: 100px; left: 250px;">
-            <div class="window-header">
-                <span class="window-title">⭐ Testimonios - reviews.json</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('testimonials-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('testimonials-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('testimonials-window')"></div>
+                <div class="start-menu-item" onclick="openWindow('cv-window'); toggleStartMenu()">
+                    <span class="start-menu-icon">📄</span>
+                    <span>Mi CV</span>
                 </div>
-            </div>
-            <div class="window-content">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h2 style="color: #7877c6; margin-bottom: 10px;">💬 Lo que dicen mis clientes</h2>
-                    <p style="color: #ff77c6;">Testimonios reales de proyectos completados</p>
-                </div>
-                
-                <div style="display: grid; gap: 20px;">
-                    <div class="project-card" style="background: rgba(120, 119, 198, 0.15);">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #7877c6, #ff77c6); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">💪</div>
-                            <div>
-                                <h4 style="color: #7877c6; margin: 0;">Alejandra</h4>
-                                <p style="color: #ff77c6; margin: 0; font-size: 14px;">Entrenadora Personal</p>
-                            </div>
-                        </div>
-                        <p style="font-style: italic; margin-bottom: 10px;">"Diego creó mi página web profesional de entrenamiento personalizado. El diseño es moderno y funcional, exactamente lo que necesitaba para mostrar mis servicios. ¡Muy recomendado!"</p>
-                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
-                    </div>
-                    
-                    <div class="project-card" style="background: rgba(255, 119, 198, 0.15);">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff77c6, #7877c6); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🏋️</div>
-                            <div>
-                                <h4 style="color: #ff77c6; margin: 0;">Luis Macías</h4>
-                                <p style="color: #7877c6; margin: 0; font-size: 14px;">Entrenador SmartFit</p>
-                            </div>
-                        </div>
-                        <p style="font-style: italic; margin-bottom: 10px;">"Excelente trabajo en mi portafolio profesional. Diego entendió perfectamente lo que necesitaba para destacar como entrenador. La página es responsive y se ve increíble en todos los dispositivos."</p>
-                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
-                    </div>
-                    
-                    <div class="project-card" style="background: rgba(120, 119, 198, 0.15);">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #7877c6, #00ff00); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🎨</div>
-                            <div>
-                                <h4 style="color: #7877c6; margin: 0;">Demian Tenorio</h4>
-                                <p style="color: #00ff00; margin: 0; font-size: 14px;">Artista Visual</p>
-                            </div>
-                        </div>
-                        <p style="font-style: italic; margin-bottom: 10px;">"Mi portafolio artístico quedó espectacular. Diego supo capturar mi estilo y crear una experiencia visual única. La navegación es intuitiva y el diseño refleja perfectamente mi trabajo."</p>
-                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
-                    </div>
-                    
-                    <div class="project-card" style="background: rgba(255, 119, 198, 0.15);">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff77c6, #ffbd2e); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">☕</div>
-                            <div>
-                                <h4 style="color: #ff77c6; margin: 0;">Lilian Martínez</h4>
-                                <p style="color: #ffbd2e; margin: 0; font-size: 14px;">Propietaria Cafetería Torogoz</p>
-                            </div>
-                        </div>
-                        <p style="font-style: italic; margin-bottom: 10px;">"La página de mi cafetería superó todas mis expectativas. Diego creó un sitio que refleja la calidez de nuestro lugar y ha ayudado a atraer más clientes. ¡Profesional y creativo!"</p>
-                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
-                    <h4 style="color: #ff77c6; margin-bottom: 10px;">🚀 ¿Quieres ser el próximo testimonio?</h4>
-                    <p style="font-size: 14px;">¡Contáctame para crear tu proyecto y unirte a estos clientes satisfechos!</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ventana Blog -->
-        <div class="window" id="blog-window" style="width: 700px; height: 600px; top: 80px; left: 150px;">
-            <div class="window-header">
-                <span class="window-title">📰 Tech Blog - news.api</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('blog-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('blog-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('blog-window')"></div>
-                </div>
-            </div>
-            <div class="window-content">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #7877c6; margin-bottom: 10px;">🌐 Tech News & Insights</h2>
-                    <p style="color: #ff77c6;">Últimas noticias de tecnología en tiempo real</p>
-                </div>
-                
-                <div id="news-container" style="display: grid; gap: 15px;">
-                    <div style="text-align: center; padding: 40px;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">📡</div>
-                        <p style="color: #7877c6;">Cargando las últimas noticias de tecnología...</p>
-                        <div class="loading-bar" style="margin: 20px auto; width: 200px;">
-                            <div class="loading-progress" style="width: 0%; animation: loadingAnimation 2s ease-in-out infinite;"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px;">
-                    <h4 style="color: #ff77c6; margin-bottom: 10px;">💡 Mis Reflexiones Tech</h4>
-                    <div style="display: grid; gap: 10px; font-size: 14px;">
-                        <p><strong>🦀 Rust:</strong> El futuro del desarrollo seguro y eficiente</p>
-                        <p><strong>🌐 Web3:</strong> Descentralización como nueva internet</p>
-                        <p><strong>🤖 IA:</strong> Transformando la manera de desarrollar software</p>
-                        <p><strong>⛓️ Blockchain:</strong> Más allá de las criptomonedas</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ventana Contacto -->
-        <div class="window" id="contact-window" style="width: 500px; height: 450px; top: 120px; left: 300px;">
-            <div class="window-header">
-                <span class="window-title">📞 Contacto - contact.info</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('contact-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('contact-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('contact-window')"></div>
-                </div>
-            </div>
-            <div class="window-content">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h2 style="color: #7877c6; margin-bottom: 10px;">¡Conectemos! 🚀</h2>
-                    <p style="color: #ff77c6;">¿Tienes un proyecto en mente? ¡Hablemos!</p>
-                </div>
-                
-                <div class="contact-grid">
-                    <div class="contact-card">
-                        <div class="contact-icon">📧</div>
-                        <h4>Email</h4>
-                        <p>diegomancera.dev@gmail.com</p>
-                        <button onclick="window.open('mailto:diegomancera.dev@gmail.com')" class="contact-btn">Enviar Email</button>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <div class="contact-icon">💬</div>
-                        <h4>WhatsApp</h4>
-                        <p>5645049448</p>
-                        <button onclick="window.open('https://wa.me/525645049448', '_blank')" class="contact-btn">Enviar Mensaje</button>
-                    </div>
-                    
-                    <div class="contact-card">
-                        <div class="contact-icon">🐙</div>
-                        <h4>GitHub</h4>
-                        <p>CryptoCapi</p>
-                        <button onclick="window.open('https://github.com/CryptoCapi', '_blank')" class="contact-btn">Ver Perfil</button>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
-                    <h4 style="color: #ff77c6; margin-bottom: 10px;">⚡ Respuesta Rápida</h4>
-                    <p style="font-size: 14px;">Generalmente respondo en menos de 24 horas. ¡No dudes en contactarme para cualquier proyecto o consulta!</p>
-                </div>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="window.open('https://drive.google.com/file/d/1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9/view?usp=sharing', '_blank')" style="background: linear-gradient(135deg, #7877c6, #ff77c6); border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
-                        📄 Descargar CV Completo
-                    </button>
+                <div class="start-menu-item" onclick="openWindow('contact-window'); toggleStartMenu()">
+                    <span class="start-menu-icon">📞</span>
+                    <span>Contacto</span>
                 </div>
             </div>
         </div>
@@ -1029,10 +487,10 @@
             </div>
         </div>
 
-        <!-- Ventana Proyectos Realizados -->
+        <!-- Ventana Proyectos -->
         <div class="window" id="projects-window" style="width: 700px; height: 600px; top: 80px; left: 200px;">
             <div class="window-header">
-                <span class="window-title">🛠️ Galería de Proyectos - projects.gallery</span>
+                <span class="window-title">🛠️ Proyectos - projects.gallery</span>
                 <div class="window-controls">
                     <div class="control-btn minimize" onclick="minimizeWindow('projects-window')"></div>
                     <div class="control-btn maximize" onclick="maximizeWindow('projects-window')"></div>
@@ -1040,94 +498,75 @@
                 </div>
             </div>
             <div class="window-content">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #7877c6; margin-bottom: 10px;">🎯 Galería de Proyectos</h2>
-                    <p style="color: #ff77c6;">Proyectos reales desarrollados para clientes</p>
-                </div>
+                <h2 style="color: #7877c6; margin-bottom: 20px; text-align: center;">🎯 Galería de Proyectos</h2>
                 
-                <div class="projects-gallery">
-                    <div class="project-gallery-card">
-                        <div class="project-image-container">
-                            <img src="https://lh3.googleusercontent.com/d/1nTBU2DALt7i3wPMmCXxZ99Ijb8Mz2-hL" alt="Cafetería Torogoz" class="project-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMTExODI3Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNzg3N2M2IiBmb250LXNpemU9IjE0Ij7imJUgQ2FmZXRlcsOtYSBUb3JvZ296PC90ZXh0Pgo8L3N2Zz4K';">
-                            <div class="project-overlay">
-                                <h3>☕ Cafetería Torogoz</h3>
-                                <p>Página promocional para cafetería en León, GTO</p>
-                                <div class="project-tags">
-                                    <span class="skill-tag">HTML</span>
-                                    <span class="skill-tag">CSS</span>
-                                    <span class="skill-tag">JavaScript</span>
-                                </div>
-                                <button onclick="window.open('https://cryptocapi.github.io/torogoz-restaurant', '_blank')" class="project-btn">Ver Sitio 🚀</button>
-                            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="project-card" style="text-align: center;">
+                        <img src="https://drive.google.com/uc?export=view&id=1nTBU2DALt7i3wPMmCXxZ99Ijb8Mz2-hL" alt="Cafetería Torogoz" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display: none; font-size: 48px; margin-bottom: 10px; color: #7877c6;">☕</div>
+                        <h4 style="color: #7877c6; margin-bottom: 8px;">Cafetería Torogoz</h4>
+                        <p style="font-size: 12px; margin: 8px 0;">Página promocional para cafetería en León, GTO. Diseño moderno y responsive.</p>
+                        <div style="margin: 8px 0;">
+                            <span class="skill-tag" style="font-size: 10px;">HTML</span>
+                            <span class="skill-tag" style="font-size: 10px;">CSS</span>
+                            <span class="skill-tag" style="font-size: 10px;">JavaScript</span>
                         </div>
+                        <button onclick="window.open('https://cryptocapi.github.io/torogoz-restaurant', '_blank')" class="contact-btn" style="padding: 6px 12px; font-size: 12px;">Ver Sitio 🚀</button>
                     </div>
                     
-                    <div class="project-gallery-card">
-                        <div class="project-image-container">
-                            <img src="https://lh3.googleusercontent.com/d/124E1zZfOMA9B22sjP8fo4_alRK3ka3cz" alt="Portafolio Demian" class="project-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMTExODI3Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY3N2M2IiBmb250LXNpemU9IjE0Ij7wn46oIFBvcnRhZm9saW8gRGVtaWFuPC90ZXh0Pgo8L3N2Zz4K';">
-                            <div class="project-overlay">
-                                <h3>🎨 Portafolio Demian</h3>
-                                <p>Portafolio profesional para artista visual</p>
-                                <div class="project-tags">
-                                    <span class="skill-tag">Portfolio</span>
-                                    <span class="skill-tag">Responsive</span>
-                                    <span class="skill-tag">UI/UX</span>
-                                </div>
-                                <button onclick="window.open('https://cryptocapi.github.io/portafoliodemian', '_blank')" class="project-btn">Ver Sitio 🚀</button>
-                            </div>
+                    <div class="project-card" style="text-align: center;">
+                        <img src="https://drive.google.com/uc?export=view&id=1Xks7R1uIWtvOWJD0hqZB8NAeT_sCOXsV" alt="Luis Macías SmartFit" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display: none; font-size: 48px; margin-bottom: 10px; color: #7877c6;">💪</div>
+                        <h4 style="color: #7877c6; margin-bottom: 8px;">SmartFit Luis Macías</h4>
+                        <p style="font-size: 12px; margin: 8px 0;">Portafolio para entrenador personal con sistema de contacto.</p>
+                        <div style="margin: 8px 0;">
+                            <span class="skill-tag" style="font-size: 10px;">Fitness</span>
+                            <span class="skill-tag" style="font-size: 10px;">Portfolio</span>
+                            <span class="skill-tag" style="font-size: 10px;">Professional</span>
                         </div>
+                        <button onclick="window.open('https://cryptocapi.github.io/luismacias', '_blank')" class="contact-btn" style="padding: 6px 12px; font-size: 12px;">Ver Sitio 🚀</button>
                     </div>
                     
-                    <div class="project-gallery-card">
-                        <div class="project-image-container">
-                            <img src="https://lh3.googleusercontent.com/d/1Mr4TJ9G_4GV1v5828Z05krHHZlLO_dxj" alt="SmartFit Luis Macías" class="project-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMTExODI3Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDBmZjAwIiBmb250LXNpemU9IjE0Ij7wn4qqIFNtYXJ0Rml0IExVSVM8L3RleHQ+Cjwvc3ZnPgo=';">
-                            <div class="project-overlay">
-                                <h3>💪 SmartFit Luis Macías</h3>
-                                <p>Portafolio para entrenador personal</p>
-                                <div class="project-tags">
-                                    <span class="skill-tag">Fitness</span>
-                                    <span class="skill-tag">Portfolio</span>
-                                    <span class="skill-tag">Professional</span>
-                                </div>
-                                <button onclick="window.open('https://cryptocapi.github.io/luismacias', '_blank')" class="project-btn">Ver Sitio 🚀</button>
-                            </div>
+                    <div class="project-card" style="text-align: center;">
+                        <img src="https://drive.google.com/uc?export=view&id=124E1zZfOMA9B22sjP8fo4_alRK3ka3cz" alt="Portafolio Demian" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display: none; font-size: 48px; margin-bottom: 10px; color: #7877c6;">🎨</div>
+                        <h4 style="color: #7877c6; margin-bottom: 8px;">Portafolio Demian</h4>
+                        <p style="font-size: 12px; margin: 8px 0;">Portafolio profesional para artista visual con galería interactiva.</p>
+                        <div style="margin: 8px 0;">
+                            <span class="skill-tag" style="font-size: 10px;">Portfolio</span>
+                            <span class="skill-tag" style="font-size: 10px;">Responsive</span>
+                            <span class="skill-tag" style="font-size: 10px;">UI/UX</span>
                         </div>
+                        <button onclick="window.open('https://cryptocapi.github.io/portafoliodemian', '_blank')" class="contact-btn" style="padding: 6px 12px; font-size: 12px;">Ver Sitio 🚀</button>
                     </div>
                     
-                    <div class="project-gallery-card">
-                        <div class="project-image-container">
-                            <img src="https://lh3.googleusercontent.com/d/1GVG1hNRZyPObacyZ9NswJzousiZ3ktaJ" alt="Estructura de Datos" class="project-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMTExODI3Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjN2Y3N2M2IiBmb250LXNpemU9IjE0Ij7wn5OKIE5zdHJ1Y3R1cmEgZGUgRGF0b3M8L3RleHQ+Cjwvc3ZnPgo=';">
-                            <div class="project-overlay">
-                                <h3>📊 Estructura de Datos</h3>
-                                <p>Página web documentando proyectos académicos</p>
-                                <div class="project-tags">
-                                    <span class="skill-tag">Academic</span>
-                                    <span class="skill-tag">Documentation</span>
-                                    <span class="skill-tag">Data Structures</span>
-                                </div>
-                                <button onclick="window.open('https://cryptocapi.github.io/estructuradedatos', '_blank')" class="project-btn">Ver Sitio 🚀</button>
-                            </div>
+                    <div class="project-card" style="text-align: center;">
+                        <img src="https://drive.google.com/uc?export=view&id=1VQpFB4RmGp32iCpvCscw6NZwDMsCmvuH" alt="Entrenamiento Alejandra" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display: none; font-size: 48px; margin-bottom: 10px; color: #7877c6;">🏋️</div>
+                        <h4 style="color: #7877c6; margin-bottom: 8px;">Entrenamiento Alejandra</h4>
+                        <p style="font-size: 12px; margin: 8px 0;">Página de entrenamiento personalizado con sistema de contacto directo.</p>
+                        <div style="margin: 8px 0;">
+                            <span class="skill-tag" style="font-size: 10px;">Fitness</span>
+                            <span class="skill-tag" style="font-size: 10px;">Personal</span>
+                            <span class="skill-tag" style="font-size: 10px;">Training</span>
                         </div>
-                    </div>
-                    
-                    <div class="project-gallery-card">
-                        <div class="project-image-container">
-                            <img src="https://lh3.googleusercontent.com/d/1VQpFB4RmGp32iCpvCscw6NZwDMsCmvuH" alt="SmartFit Entrenadora" class="project-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMTExODI3Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmY3N2M2IiBmb250LXNpemU9IjE0Ij7wn5KqIFNtYXJ0Rml0IEVudHJlbmFkb3JhPC90ZXh0Pgo8L3N2Zz4K';">
-                            <div class="project-overlay">
-                                <h3>💪 SmartFit Entrenadora</h3>
-                                <p>Portafolio profesional para entrenadora personal</p>
-                                <div class="project-tags">
-                                    <span class="skill-tag">Fitness</span>
-                                    <span class="skill-tag">Portfolio</span>
-                                    <span class="skill-tag">Professional</span>
-                                </div>
-                                <button onclick="window.open('https://cryptocapi.github.io/Entrenamiento-Personalizado-Alejandra', '_blank')" class="project-btn">Ver Sitio 🚀</button>
-                            </div>
-                        </div>
+                        <button onclick="window.open('https://cryptocapi.github.io/Entrenamiento-Personalizado-Alejandra', '_blank')" class="contact-btn" style="padding: 6px 12px; font-size: 12px;">Ver Sitio 🚀</button>
                     </div>
                 </div>
                 
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                <div class="project-card" style="text-align: center;">
+                    <img src="https://drive.google.com/uc?export=view&id=1GVG1hNRZyPObacyZ9NswJzousiZ3ktaJ" alt="Estructura de Datos" style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display: none; font-size: 48px; margin-bottom: 10px; color: #7877c6;">📊</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">Página Estructura de Datos</h4>
+                    <p style="font-size: 12px; margin: 8px 0;">Proyecto académico sobre estructuras de datos con ejemplos interactivos.</p>
+                    <div style="margin: 8px 0;">
+                        <span class="skill-tag" style="font-size: 10px;">Academic</span>
+                        <span class="skill-tag" style="font-size: 10px;">Educational</span>
+                        <span class="skill-tag" style="font-size: 10px;">Interactive</span>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;">
                     <h4 style="color: #ff77c6; margin-bottom: 10px;">🚀 ¿Tienes un proyecto en mente?</h4>
                     <p style="font-size: 14px;">¡Haz clic en "Contacto" para discutir tu próximo proyecto!</p>
                 </div>
@@ -1204,130 +643,6 @@
             </div>
         </div>
 
-        <!-- Ventana Wallpapers -->
-        <div class="window" id="wallpaper-window" style="width: 500px; height: 400px; top: 150px; left: 100px;">
-            <div class="window-header">
-                <span class="window-title">🎨 Fondos de Pantalla - themes.conf</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('wallpaper-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('wallpaper-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('wallpaper-window')"></div>
-                </div>
-            </div>
-            <div class="window-content">
-                <h3 style="color: #7877c6; margin-bottom: 15px;">Selecciona un tema:</h3>
-                <div class="wallpaper-grid">
-                    <div class="wallpaper-option" style="background: url('https://wallpapers.com/images/hd/arch-linux-1920-x-1080-wallpaper-6ordldys30y1qxv7.jpg') center/cover;" onclick="changeWallpaper('default')">
-                        <span style="color: white; font-size: 12px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 4px;">Arch Clásico</span>
-                    </div>
-                    <div class="wallpaper-option" style="background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);" onclick="changeWallpaper('ocean')">
-                        <span style="color: white; font-size: 12px;">Océano</span>
-                    </div>
-                    <div class="wallpaper-option" style="background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);" onclick="changeWallpaper('sunset')">
-                        <span style="color: white; font-size: 12px;">Atardecer</span>
-                    </div>
-                    <div class="wallpaper-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="changeWallpaper('purple')">
-                        <span style="color: white; font-size: 12px;">Púrpura</span>
-                    </div>
-                    <div class="wallpaper-option" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="changeWallpaper('pink')">
-                        <span style="color: white; font-size: 12px;">Rosa</span>
-                    </div>
-                    <div class="wallpaper-option" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" onclick="changeWallpaper('cyber')">
-                        <span style="color: white; font-size: 12px;">Cyber</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ventana Planes -->
-        <div class="window" id="plans-window" style="width: 650px; height: 600px; top: 80px; left: 350px;">
-            <div class="window-header">
-                <span class="window-title">💰 Planes de Servicios - pricing.json</span>
-                <div class="window-controls">
-                    <div class="control-btn minimize" onclick="minimizeWindow('plans-window')"></div>
-                    <div class="control-btn maximize" onclick="maximizeWindow('plans-window')"></div>
-                    <div class="control-btn close" onclick="closeWindow('plans-window')"></div>
-                </div>
-            </div>
-            <div class="window-content">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #7877c6; margin-bottom: 10px;">💼 Servicios Estudiantiles</h2>
-                    <p style="color: #ff77c6; margin-bottom: 15px;">Precios accesibles para estudiantes y emprendedores</p>
-                    
-                    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-                        <button id="currency-btn" onclick="toggleCurrency()" style="background: linear-gradient(135deg, #7877c6, #ff77c6); border: none; padding: 8px 16px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 12px;">
-                            🔄 Cambiar a USD
-                        </button>
-                        <div style="background: rgba(120, 119, 198, 0.2); padding: 8px 12px; border-radius: 6px; font-size: 12px; color: #7877c6;">
-                            💱 Tipo de cambio: $18.50 MXN = $1 USD
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="price-card floating">
-                    <h3 style="color: #7877c6; margin-bottom: 10px;">🚀 Básico</h3>
-                    <div style="font-size: 24px; font-weight: bold; margin: 15px 0;">
-                        <span id="price-basic">$800 MXN</span>
-                    </div>
-                    <ul style="text-align: left; margin: 15px 0;">
-                        <li>✅ Página web básica (Landing Page)</li>
-                        <li>✅ Diseño responsive (móvil/desktop)</li>
-                        <li>✅ Optimización SEO básica</li>
-                        <li>✅ 1 revisión incluida</li>
-                        <li>✅ Entrega en 3-5 días</li>
-                    </ul>
-                    <div style="background: rgba(120, 119, 198, 0.1); padding: 8px; border-radius: 4px; font-size: 12px; color: #7877c6;">
-                        💡 Ideal para: Portafolios personales, páginas promocionales
-                    </div>
-                </div>
-                
-                <div class="price-card floating" style="animation-delay: 0.5s;">
-                    <h3 style="color: #ff77c6; margin-bottom: 10px;">⚡ Pro</h3>
-                    <div style="font-size: 24px; font-weight: bold; margin: 15px 0;">
-                        <span id="price-pro">$2,000 MXN</span>
-                    </div>
-                    <ul style="text-align: left; margin: 15px 0;">
-                        <li>✅ Todo lo del plan Básico</li>
-                        <li>✅ Múltiples páginas (hasta 5)</li>
-                        <li>✅ Formularios de contacto</li>
-                        <li>✅ Galería de imágenes</li>
-                        <li>✅ 3 revisiones incluidas</li>
-                        <li>✅ Soporte 15 días</li>
-                        <li>✅ Entrega en 7-10 días</li>
-                    </ul>
-                    <div style="background: rgba(255, 119, 198, 0.1); padding: 8px; border-radius: 4px; font-size: 12px; color: #ff77c6;">
-                        💡 Ideal para: Negocios pequeños, cafeterías, entrenadores
-                    </div>
-                </div>
-                
-                <div class="price-card floating" style="animation-delay: 1s;">
-                    <h3 style="color: #00ff00; margin-bottom: 10px;">🔥 Premium</h3>
-                    <div style="font-size: 24px; font-weight: bold; margin: 15px 0;">
-                        <span id="price-premium">$3,500 MXN</span>
-                    </div>
-                    <ul style="text-align: left; margin: 15px 0;">
-                        <li>✅ Todo lo del plan Pro</li>
-                        <li>✅ E-commerce básico</li>
-                        <li>✅ Panel de administración</li>
-                        <li>✅ Integración con redes sociales</li>
-                        <li>✅ Funcionalidades avanzadas</li>
-                        <li>✅ Revisiones ilimitadas</li>
-                        <li>✅ Soporte 30 días</li>
-                        <li>✅ Entrega en 10-15 días</li>
-                    </ul>
-                    <div style="background: rgba(0, 255, 0, 0.1); padding: 8px; border-radius: 4px; font-size: 12px; color: #00ff00;">
-                        💡 Ideal para: Tiendas online, empresas, proyectos complejos
-                    </div>
-                </div>
-                
-                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
-                    <h4 style="color: #ff77c6; margin-bottom: 10px;">🎓 Descuento Estudiante</h4>
-                    <p style="font-size: 14px; margin-bottom: 10px;">¡15% de descuento adicional para estudiantes con credencial vigente!</p>
-                    <p style="font-size: 12px; color: #7877c6;">💳 Acepto: Transferencia, PayPal, Oxxo Pay</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Ventana Chat IA -->
         <div class="window" id="chat-window" style="width: 450px; height: 500px; top: 120px; left: 500px;">
             <div class="window-header">
@@ -1351,1098 +666,218 @@
                 </div>
             </div>
         </div>
+
+        <!-- Ventana Testimonios -->
+        <div class="window" id="testimonials-window" style="width: 600px; height: 550px; top: 100px; left: 250px;">
+            <div class="window-header">
+                <span class="window-title">⭐ Testimonios - reviews.json</span>
+                <div class="window-controls">
+                    <div class="control-btn minimize" onclick="minimizeWindow('testimonials-window')"></div>
+                    <div class="control-btn maximize" onclick="maximizeWindow('testimonials-window')"></div>
+                    <div class="control-btn close" onclick="closeWindow('testimonials-window')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #7877c6; margin-bottom: 10px;">💬 Lo que dicen mis clientes</h2>
+                    <p style="color: #ff77c6;">Testimonios reales de proyectos completados</p>
+                </div>
+                
+                <div style="display: grid; gap: 20px;">
+                    <div class="project-card" style="background: rgba(120, 119, 198, 0.15);">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #7877c6, #ff77c6); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">💪</div>
+                            <div>
+                                <h4 style="color: #7877c6; margin: 0;">Alejandra</h4>
+                                <p style="color: #ff77c6; margin: 0; font-size: 14px;">Entrenadora Personal</p>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin-bottom: 10px;">"Diego creó mi página web profesional de entrenamiento personalizado. El diseño es moderno y funcional, exactamente lo que necesitaba para mostrar mis servicios. ¡Muy recomendado!"</p>
+                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    
+                    <div class="project-card" style="background: rgba(255, 119, 198, 0.15);">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff77c6, #7877c6); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🏋️</div>
+                            <div>
+                                <h4 style="color: #ff77c6; margin: 0;">Luis Macías</h4>
+                                <p style="color: #7877c6; margin: 0; font-size: 14px;">Entrenador SmartFit</p>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin-bottom: 10px;">"Excelente trabajo en mi portafolio profesional. Diego entendió perfectamente lo que necesitaba para destacar como entrenador. La página es responsive y se ve increíble en todos los dispositivos."</p>
+                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    
+                    <div class="project-card" style="background: rgba(120, 119, 198, 0.15);">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #7877c6, #00ff00); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">🎨</div>
+                            <div>
+                                <h4 style="color: #7877c6; margin: 0;">Demian Tenorio</h4>
+                                <p style="color: #00ff00; margin: 0; font-size: 14px;">Artista Visual</p>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin-bottom: 10px;">"Mi portafolio artístico quedó espectacular. Diego supo capturar mi estilo y crear una experiencia visual única. La navegación es intuitiva y el diseño refleja perfectamente mi trabajo."</p>
+                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                    
+                    <div class="project-card" style="background: rgba(255, 119, 198, 0.15);">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff77c6, #ffbd2e); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">☕</div>
+                            <div>
+                                <h4 style="color: #ff77c6; margin: 0;">Lilian Martínez</h4>
+                                <p style="color: #ffbd2e; margin: 0; font-size: 14px;">Propietaria Cafetería Torogoz</p>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; margin-bottom: 10px;">"La página de mi cafetería superó todas mis expectativas. Diego creó un sitio que refleja la calidez de nuestro lugar y ha ayudado a atraer más clientes. ¡Profesional y creativo!"</p>
+                        <div style="color: #ffbd2e;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(120, 119, 198, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;">
+                    <h4 style="color: #ff77c6; margin-bottom: 10px;">🚀 ¿Quieres ser el próximo testimonio?</h4>
+                    <p style="font-size: 14px;">¡Contáctame para crear tu proyecto y unirte a estos clientes satisfechos!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana CV -->
+        <div class="window" id="cv-window" style="width: 700px; height: 600px; top: 80px; left: 200px;">
+            <div class="window-header">
+                <span class="window-title">📄 Mi CV - curriculum.pdf</span>
+                <div class="window-controls">
+                    <div class="control-btn minimize" onclick="minimizeWindow('cv-window')"></div>
+                    <div class="control-btn maximize" onclick="maximizeWindow('cv-window')"></div>
+                    <div class="control-btn close" onclick="closeWindow('cv-window')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #7877c6; margin-bottom: 10px;">📄 Curriculum Vitae</h2>
+                    <p style="color: #ff77c6;">Diego Mancera - Desarrollador Full Stack</p>
+                    <div style="margin: 15px 0;">
+                        <button onclick="window.open('https://drive.google.com/file/d/1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9/view?usp=sharing', '_blank')" class="contact-btn" style="margin-right: 10px;">
+                            📖 Ver PDF Completo
+                        </button>
+                        <button onclick="window.open('https://drive.google.com/uc?export=download&id=1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9', '_blank')" class="contact-btn">
+                            💾 Descargar PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(120, 119, 198, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #7877c6; margin-bottom: 15px;">👤 Información Personal</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div><strong>Nombre:</strong> Diego Mancera</div>
+                        <div><strong>Edad:</strong> 19 años</div>
+                        <div><strong>Email:</strong> diegomancera.dev@gmail.com</div>
+                        <div><strong>Teléfono:</strong> 5645049448</div>
+                        <div><strong>Ubicación:</strong> León, Guanajuato, México</div>
+                        <div><strong>GitHub:</strong> CryptoCapi</div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255, 119, 198, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #ff77c6; margin-bottom: 15px;">🎓 Educación</h3>
+                    <div style="font-size: 14px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>Ingeniería en Sistemas Computacionales</strong><br>
+                            Universidad Tecnológica de León (En curso)<br>
+                            <em>2023 - Presente</em>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(120, 119, 198, 0.1); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #7877c6; margin-bottom: 15px;">💼 Experiencia</h3>
+                    <div style="font-size: 14px;">
+                        <div style="margin-bottom: 15px;">
+                            <strong>Desarrollador Web Freelance</strong><br>
+                            <em>2023 - Presente</em><br>
+                            • Desarrollo de páginas web para pequeños negocios<br>
+                            • Creación de portafolios profesionales<br>
+                            • Mantenimiento y optimización de sitios web
+                        </div>
+                        <div>
+                            <strong>Técnico en Mantenimiento de Hardware</strong><br>
+                            <em>2022 - 2023</em><br>
+                            • Mantenimiento preventivo y correctivo de equipos<br>
+                            • Diagnóstico y reparación de componentes<br>
+                            • Soporte técnico a usuarios
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255, 119, 198, 0.1); padding: 20px; border-radius: 8px;">
+                    <h3 style="color: #ff77c6; margin-bottom: 15px;">🏆 Certificaciones</h3>
+                    <div style="font-size: 14px;">
+                        <div style="margin-bottom: 8px;">• <strong>Java Programming</strong> - Metaphorce (2023)</div>
+                        <div>• <strong>Mantenimiento Preventivo y Correctivo de PC</strong> - CECATI (2022)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventana Contacto -->
+        <div class="window" id="contact-window" style="width: 500px; height: 450px; top: 120px; left: 300px;">
+            <div class="window-header">
+                <span class="window-title">📞 Contacto - contact.info</span>
+                <div class="window-controls">
+                    <div class="control-btn minimize" onclick="minimizeWindow('contact-window')"></div>
+                    <div class="control-btn maximize" onclick="maximizeWindow('contact-window')"></div>
+                    <div class="control-btn close" onclick="closeWindow('contact-window')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #7877c6; margin-bottom: 10px;">¡Conectemos! 🚀</h2>
+                    <p style="color: #ff77c6;">¿Tienes un proyecto en mente? ¡Hablemos!</p>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">📧</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">Email</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace;">diegomancera.dev@gmail.com</p>
+                    <button onclick="window.open('mailto:diegomancera.dev@gmail.com')" class="contact-btn">Enviar Email</button>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">💬</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">WhatsApp</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace;">5645049448</p>
+                    <button onclick="window.open('https://wa.me/525645049448', '_blank')" class="contact-btn">Enviar Mensaje</button>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">🐙</div>
+                    <h4 style="color: #7877c6; margin-bottom: 8px;">GitHub</h4>
+                    <p style="color: #e6e6e6; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace;">CryptoCapi</p>
+                    <button onclick="window.open('https://github.com/CryptoCapi', '_blank')" class="contact-btn">Ver Perfil</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="window.open('https://drive.google.com/file/d/1cjBbOg0yjTtfRVD_0PPl_J7fD1leQ-W9/view?usp=sharing', '_blank')" style="background: linear-gradient(135deg, #7877c6, #ff77c6); border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+                        📄 Descargar CV Completo
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Barra de tareas -->
     <div class="taskbar">
-        <img class="arch-logo" src="https://lignux.com/wp-content/uploads/2016/06/arch.png" alt="Arch Linux Logo" onclick="toggleStartMenu()" onerror="this.style.display='none';" />
+        <div style="width: 30px; height: 30px; margin-right: 20px; cursor: pointer; transition: transform 0.3s ease; display: flex; align-items: center; justify-content: center;" onclick="toggleStartMenu()">
+            <img src="https://incubaweb.com/wp-content/uploads/2015/07/archlinux_linux_distribution.png" alt="Arch Linux" style="width: 30px; height: 30px; object-fit: contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='🏠'; this.parentElement.style.background='linear-gradient(135deg, #7877c6, #ff77c6)'; this.parentElement.style.borderRadius='50%';">
+        </div>
         
         <div class="taskbar-apps" id="taskbar-apps">
             <!-- Las aplicaciones abiertas aparecerán aquí dinámicamente -->
         </div>
         
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <button id="language-btn" onclick="toggleLanguage()" style="background: rgba(120, 119, 198, 0.3); border: 1px solid #7877c6; border-radius: 4px; padding: 4px 8px; color: #e6e6e6; cursor: pointer; font-size: 12px; transition: all 0.3s ease;" title="Cambiar idioma / Change language">
-                🌐 ES
-            </button>
-            <div class="system-info">
-                <span id="current-time"></span> | DiegoOS v1.0 | CPU: 45% | RAM: 2.1GB
-            </div>
+        <div class="system-info">
+            <span id="current-time"></span> | DiegoOS v1.0 | CPU: 45% | RAM: 2.1GB
         </div>
     </div>
 
-    <script>
-        // Sistema de ventanas
-        let activeWindows = [];
-        let zIndexCounter = 100;
-        let maximizedWindows = new Set();
-        let tourStep = 0;
-
-        // Sistema de arrastre de iconos
-        let isDraggingIcon = false;
-        let draggedIcon = null;
-        let iconOffset = { x: 0, y: 0 };
-
-        function openWindow(windowId) {
-            const window = document.getElementById(windowId);
-            window.classList.add('active');
-            window.classList.remove('minimized');
-            window.style.zIndex = ++zIndexCounter;
-            
-            if (!activeWindows.includes(windowId)) {
-                activeWindows.push(windowId);
-                updateTaskbar();
-            }
-        }
-
-        function closeWindow(windowId) {
-            const window = document.getElementById(windowId);
-            window.classList.remove('active');
-            window.classList.remove('minimized');
-            maximizedWindows.delete(windowId);
-            activeWindows = activeWindows.filter(id => id !== windowId);
-            updateTaskbar();
-        }
-
-        function minimizeWindow(windowId) {
-            const window = document.getElementById(windowId);
-            window.classList.add('minimized');
-            window.classList.remove('active');
-            updateTaskbar();
-        }
-
-        function maximizeWindow(windowId) {
-            const window = document.getElementById(windowId);
-            
-            if (maximizedWindows.has(windowId)) {
-                window.style.width = '';
-                window.style.height = '';
-                window.style.top = '';
-                window.style.left = '';
-                maximizedWindows.delete(windowId);
-            } else {
-                window.style.width = 'calc(100vw - 40px)';
-                window.style.height = 'calc(100vh - 90px)';
-                window.style.top = '20px';
-                window.style.left = '20px';
-                maximizedWindows.add(windowId);
-            }
-        }
-
-        function updateTaskbar() {
-            const taskbarApps = document.getElementById('taskbar-apps');
-            taskbarApps.innerHTML = '';
-            
-            const windowTitles = {
-                'welcome-window': { icon: '🎉', title: 'Bienvenida' },
-                'about-window': { icon: '📋', title: 'Sobre Mí' },
-                'projects-window': { icon: '🛠️', title: 'Proyectos' },
-                'future-window': { icon: '🚀', title: 'Futuros' },
-                'terminal-window': { icon: '💻', title: 'Terminal' },
-                'wallpaper-window': { icon: '🎨', title: 'Temas' },
-                'plans-window': { icon: '💰', title: 'Servicios' },
-                'chat-window': { icon: '🤖', title: 'IA Support' },
-                'testimonials-window': { icon: '⭐', title: 'Testimonios' },
-                'blog-window': { icon: '📰', title: 'Tech Blog' },
-                'contact-window': { icon: '📞', title: 'Contacto' }
-            };
-            
-            activeWindows.forEach(windowId => {
-                const window = document.getElementById(windowId);
-                const windowInfo = windowTitles[windowId];
-                
-                if (windowInfo) {
-                    const taskbarApp = document.createElement('div');
-                    taskbarApp.className = 'taskbar-app';
-                    if (window.classList.contains('active') && !window.classList.contains('minimized')) {
-                        taskbarApp.classList.add('active');
-                    }
-                    
-                    taskbarApp.innerHTML = `
-                        <span class="taskbar-app-icon">${windowInfo.icon}</span>
-                        <span class="taskbar-app-title">${windowInfo.title}</span>
-                    `;
-                    
-                    taskbarApp.onclick = () => {
-                        if (window.classList.contains('minimized')) {
-                            window.classList.remove('minimized');
-                            window.classList.add('active');
-                            window.style.zIndex = ++zIndexCounter;
-                        } else if (window.classList.contains('active')) {
-                            minimizeWindow(windowId);
-                        } else {
-                            window.classList.add('active');
-                            window.style.zIndex = ++zIndexCounter;
-                        }
-                        updateTaskbar();
-                    };
-                    
-                    taskbarApps.appendChild(taskbarApp);
-                }
-            });
-        }
-
-        function toggleStartMenu() {
-            const startMenu = document.getElementById('start-menu');
-            startMenu.classList.toggle('active');
-        }
-
-        function showNotification(title, message, duration = 5000) {
-            const container = document.getElementById('notification-container');
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            
-            notification.innerHTML = `
-                <div class="notification-title">${title}</div>
-                <div class="notification-message">${message}</div>
-            `;
-            
-            container.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, duration);
-        }
-
-        function startTour() {
-            closeWindow('welcome-window');
-            tourStep = 0;
-            nextTourStep();
-        }
-
-        function nextTourStep() {
-            const tourSteps = [
-                {
-                    action: () => openWindow('about-window'),
-                    notification: { title: '📋 Paso 1: Sobre Mí', message: 'Aquí puedes conocer mi información personal y habilidades' }
-                },
-                {
-                    action: () => openWindow('projects-window'),
-                    notification: { title: '🛠️ Paso 2: Proyectos', message: 'Revisa todos los proyectos que he completado' }
-                },
-                {
-                    action: () => openWindow('terminal-window'),
-                    notification: { title: '💻 Paso 3: Terminal', message: 'Prueba comandos como "help", "about", "projects"' }
-                },
-                {
-                    action: () => openWindow('contact-window'),
-                    notification: { title: '📞 Paso 4: Contacto', message: '¡Aquí puedes encontrar todas mis formas de contacto!' }
-                }
-            ];
-            
-            if (tourStep < tourSteps.length) {
-                const step = tourSteps[tourStep];
-                step.action();
-                showNotification(step.notification.title, step.notification.message);
-                tourStep++;
-                
-                if (tourStep < tourSteps.length) {
-                    setTimeout(nextTourStep, 3000);
-                } else {
-                    setTimeout(() => {
-                        showNotification('🎉 Tour Completado', '¡Ahora puedes explorar libremente mi portafolio!');
-                    }, 3000);
-                }
-            }
-        }
-
-        // Sistema de arrastrar ventanas
-        let isDragging = false;
-        let currentWindow = null;
-        let offset = { x: 0, y: 0 };
-
-        document.addEventListener('mousedown', (e) => {
-            // Arrastre de iconos
-            if (e.target.closest('.desktop-icon') && !e.target.closest('.window')) {
-                isDraggingIcon = true;
-                draggedIcon = e.target.closest('.desktop-icon');
-                draggedIcon.classList.add('dragging');
-                
-                const rect = draggedIcon.getBoundingClientRect();
-                const desktopRect = document.getElementById('desktop-icons').getBoundingClientRect();
-                
-                iconOffset.x = e.clientX - rect.left;
-                iconOffset.y = e.clientY - rect.top;
-                
-                e.preventDefault();
-                return;
-            }
-            
-            // Arrastre de ventanas
-            if (e.target.classList.contains('window-header') || e.target.parentElement.classList.contains('window-header')) {
-                isDragging = true;
-                currentWindow = e.target.closest('.window');
-                const rect = currentWindow.getBoundingClientRect();
-                offset.x = e.clientX - rect.left;
-                offset.y = e.clientY - rect.top;
-                currentWindow.style.zIndex = ++zIndexCounter;
-            }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDraggingIcon && draggedIcon) {
-                const desktopRect = document.getElementById('desktop-icons').getBoundingClientRect();
-                
-                let newX = e.clientX - desktopRect.left - iconOffset.x;
-                let newY = e.clientY - desktopRect.top - iconOffset.y;
-                
-                // Limitar dentro del área del escritorio
-                newX = Math.max(0, Math.min(newX, desktopRect.width - 80));
-                newY = Math.max(0, Math.min(newY, desktopRect.height - 90));
-                
-                draggedIcon.style.left = newX + 'px';
-                draggedIcon.style.top = newY + 'px';
-                
-                e.preventDefault();
-                return;
-            }
-            
-            if (isDragging && currentWindow) {
-                currentWindow.style.left = (e.clientX - offset.x) + 'px';
-                currentWindow.style.top = (e.clientY - offset.y) + 'px';
-            }
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (isDraggingIcon && draggedIcon) {
-                draggedIcon.classList.remove('dragging');
-                isDraggingIcon = false;
-                draggedIcon = null;
-                
-                // Guardar posiciones en localStorage
-                saveIconPositions();
-            }
-            
-            isDragging = false;
-            currentWindow = null;
-        });
-
-        // Guardar y cargar posiciones de iconos
-        function saveIconPositions() {
-            const icons = document.querySelectorAll('.desktop-icon');
-            const positions = {};
-            
-            icons.forEach((icon, index) => {
-                const rect = icon.getBoundingClientRect();
-                const desktopRect = document.getElementById('desktop-icons').getBoundingClientRect();
-                
-                positions[index] = {
-                    x: parseInt(icon.style.left) || 0,
-                    y: parseInt(icon.style.top) || 0
-                };
-            });
-            
-            localStorage.setItem('iconPositions', JSON.stringify(positions));
-        }
-
-        function loadIconPositions() {
-            const saved = localStorage.getItem('iconPositions');
-            if (saved) {
-                const positions = JSON.parse(saved);
-                const icons = document.querySelectorAll('.desktop-icon');
-                
-                icons.forEach((icon, index) => {
-                    if (positions[index]) {
-                        icon.style.left = positions[index].x + 'px';
-                        icon.style.top = positions[index].y + 'px';
-                    }
-                });
-            }
-        }
-
-        // Cerrar menú de inicio al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            const startMenu = document.getElementById('start-menu');
-            const archLogo = document.querySelector('.arch-logo');
-            
-            if (!startMenu.contains(e.target) && e.target !== archLogo) {
-                startMenu.classList.remove('active');
-            }
-        });
-
-        // Terminal
-        let terminalHistory = [];
-        let historyIndex = -1;
-
-        const terminalCommands = {
-            es: {
-                help: 'Comandos disponibles:\n- about: Información personal\n- projects: Lista proyectos\n- skills: Habilidades técnicas\n- contact: Información de contacto\n- clear: Limpiar terminal\n- neofetch: Info del sistema\n- ls: Listar archivos\n- whoami: Usuario actual\n- date: Fecha y hora actual\n- pwd: Directorio actual\n- github: Enlace a GitHub',
-                about: 'Diego - 19 años\nEstudiante de Ingeniería en Sistemas\nDesarrollador Full Stack especializado en Web3 y criptomonedas\nApasionado por la IA y nuevas tecnologías',
-                projects: 'Proyectos realizados:\n1. Cafetería Torogoz (León, GTO)\n2. Portafolios SmartFit (x2)\n3. Tienda Tecnológica\n4. Página Estructura de Datos\n\nEn desarrollo:\n- Tokens en Rust\n- Red Social Mexicana 🇲🇽',
-                skills: 'Lenguajes:\n- Rust, Java, C#, C\n- HTML, CSS, JavaScript\n\nHerramientas:\n- Visual Studio, Cursor, NetBeans\n- Mantenimiento de Hardware\n\nCertificaciones:\n- Java (Metaphorce)\n- Mantenimiento Preventivo/Correctivo PC',
-                contact: 'Contacto:\n📧 Email: diegomancera.dev@gmail.com\n💬 WhatsApp: 5645049448\n🐙 GitHub: https://github.com/CryptoCapi',
-                github: 'GitHub: https://github.com/CryptoCapi\n¡Visita mi perfil para ver todos mis proyectos!',
-                clear: 'CLEAR',
-                neofetch: `     /\\         diego@diegoportfolio
-    /  \\        ----------------
-   /\\   \\       OS: DiegoOS Portfolio v1.0
-  /  \\  /\\      Kernel: Linux 6.1.0-arch
- /    \\/  \\     Tiempo activo: 2 horas, 15 mins
-/\\        /\\    Paquetes: 1337 (pacman)
-\\/        \\/    Shell: bash 5.1.16
-                DE: Portfolio Personalizado
-                Lenguajes: Rust, Java, C#, C, JS
-                Especialidad: Web3 & Blockchain
-                Memoria: 2048MiB / 32768MiB`,
-                ls: 'about.txt  projects/  skills.md  contact.info  portfolio.html  README.md  rust_tokens/  social_mx/',
-                whoami: 'diego - Ingeniero en Sistemas & Full Stack Developer',
-                date: new Date().toLocaleString('es-ES'),
-                pwd: '/home/diego/portfolio'
-            },
-            en: {
-                help: 'Available commands:\n- about: Personal information\n- projects: List projects\n- skills: Technical skills\n- contact: Contact information\n- clear: Clear terminal\n- neofetch: System info\n- ls: List files\n- whoami: Current user\n- date: Current date and time\n- pwd: Current directory\n- github: GitHub link',
-                about: 'Diego - 19 years old\nSystems Engineering Student\nFull Stack Developer specialized in Web3 and cryptocurrencies\nPassionate about AI and new technologies',
-                projects: 'Completed projects:\n1. Cafetería Torogoz (León, GTO)\n2. SmartFit Portfolios (x2)\n3. Tech Store\n4. Data Structures Page\n\nIn development:\n- Rust Tokens\n- Mexican Social Network 🇲🇽',
-                skills: 'Languages:\n- Rust, Java, C#, C\n- HTML, CSS, JavaScript\n\nTools:\n- Visual Studio, Cursor, NetBeans\n- Hardware Maintenance\n\nCertifications:\n- Java (Metaphorce)\n- PC Preventive/Corrective Maintenance',
-                contact: 'Contact:\n📧 Email: diegomancera.dev@gmail.com\n💬 WhatsApp: 5645049448\n🐙 GitHub: https://github.com/CryptoCapi',
-                github: 'GitHub: https://github.com/CryptoCapi\nVisit my profile to see all my projects!',
-                clear: 'CLEAR',
-                neofetch: `     /\\         diego@diegoportfolio
-    /  \\        ----------------
-   /\\   \\       OS: DiegoOS Portfolio v1.0
-  /  \\  /\\      Kernel: Linux 6.1.0-arch
- /    \\/  \\     Uptime: 2 hours, 15 mins
-/\\        /\\    Packages: 1337 (pacman)
-\\/        \\/    Shell: bash 5.1.16
-                DE: Custom Portfolio
-                Languages: Rust, Java, C#, C, JS
-                Specialty: Web3 & Blockchain
-                Memory: 2048MiB / 32768MiB`,
-                ls: 'about.txt  projects/  skills.md  contact.info  portfolio.html  README.md  rust_tokens/  social_mx/',
-                whoami: 'diego - Systems Engineer & Full Stack Developer',
-                date: new Date().toLocaleString('en-US'),
-                pwd: '/home/diego/portfolio'
-            }
-        };
-
-        function initTerminal() {
-            const terminalInput = document.getElementById('terminal-input');
-            if (!terminalInput) return;
-            
-            terminalInput.addEventListener('keydown', handleTerminalInput);
-            terminalInput.focus();
-        }
-
-        function handleTerminalInput(e) {
-            const terminalInput = e.target;
-            
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const command = terminalInput.value.trim();
-                
-                if (command) {
-                    terminalHistory.unshift(command);
-                    historyIndex = -1;
-                }
-                
-                addTerminalLine(`<span class="prompt">[diego@portfolio ~]$ </span>${command}`);
-                executeCommand(command);
-                terminalInput.value = '';
-                createNewCommandLine();
-                
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (historyIndex < terminalHistory.length - 1) {
-                    historyIndex++;
-                    terminalInput.value = terminalHistory[historyIndex];
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    terminalInput.value = terminalHistory[historyIndex];
-                } else if (historyIndex === 0) {
-                    historyIndex = -1;
-                    terminalInput.value = '';
-                }
-            }
-        }
-
-        function addTerminalLine(content) {
-            const terminal = document.getElementById('terminal');
-            const currentLine = terminal.querySelector('.terminal-line:last-child');
-            
-            const newLine = document.createElement('div');
-            newLine.className = 'terminal-line';
-            newLine.innerHTML = content;
-            
-            terminal.insertBefore(newLine, currentLine);
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        function executeCommand(command) {
-            const lowerCommand = command.toLowerCase();
-            const commands = terminalCommands[currentLanguage];
-            
-            if (lowerCommand === 'clear') {
-                clearTerminal();
-                return;
-            }
-            
-            const output = commands[lowerCommand] || `bash: ${command}: command not found`;
-            
-            if (output) {
-                const lines = output.split('\n');
-                lines.forEach(line => {
-                    addTerminalLine(line);
-                });
-            }
-        }
-
-        function clearTerminal() {
-            const terminal = document.getElementById('terminal');
-            terminal.innerHTML = `
-                <div class="terminal-line">DiegoOS Portfolio Terminal v1.0</div>
-                <div class="terminal-line">Escribe 'help' para ver comandos disponibles</div>
-                <div class="terminal-line"></div>
-                <div class="terminal-line">
-                    <span class="prompt">[diego@portfolio ~]$ </span>
-                    <input type="text" class="terminal-input" id="terminal-input" placeholder="Escribe un comando...">
-                </div>
-            `;
-            initTerminal();
-        }
-
-        function createNewCommandLine() {
-            const terminal = document.getElementById('terminal');
-            const currentLine = terminal.querySelector('.terminal-line:last-child');
-            
-            const input = currentLine.querySelector('.terminal-input');
-            if (input) {
-                input.remove();
-            }
-            
-            const newLine = document.createElement('div');
-            newLine.className = 'terminal-line';
-            newLine.innerHTML = `<span class="prompt">[diego@portfolio ~]$ </span><input type="text" class="terminal-input" id="terminal-input" placeholder="Escribe un comando...">`;
-            
-            terminal.appendChild(newLine);
-            initTerminal();
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        // Chat IA
-        const aiResponses = {
-            es: {
-                'hola': '¡Hola! Soy Diego, ¿en qué puedo ayudarte con mi portafolio?',
-                'hello': '¡Hola! Soy Diego, ¿en qué puedo ayudarte con mi portafolio?',
-                'proyectos': 'He trabajado en varios proyectos como la página de Cafetería Torogoz en León, portafolios para entrenadores de SmartFit, una tienda tecnológica y documentación académica. También estoy desarrollando tokens en Rust y una red social mexicana. ¿Te interesa alguno?',
-                'projects': 'He trabajado en varios proyectos como la página de Cafetería Torogoz en León, portafolios para entrenadores de SmartFit, una tienda tecnológica y documentación académica. También estoy desarrollando tokens en Rust y una red social mexicana. ¿Te interesa alguno?',
-                'blockchain': 'Estoy especializándome en Web3 y desarrollo de tokens de criptomonedas usando Rust. Tengo conocimiento teórico sólido y estoy trabajando en proyectos prácticos para diferentes redes blockchain.',
-                'precios': 'Ofrezco tres planes accesibles: Básico ($800 MXN), Pro ($2,000 MXN) y Premium ($3,500 MXN). Como estudiante, manejo precios justos para emprendedores y pequeños negocios. ¡También hay 15% de descuento para estudiantes!',
-                'prices': 'Ofrezco tres planes accesibles: Básico ($800 MXN), Pro ($2,000 MXN) y Premium ($3,500 MXN). Como estudiante, manejo precios justos para emprendedores y pequeños negocios. ¡También hay 15% de descuento para estudiantes!',
-                'contacto': 'Puedes contactarme por email: diegomancera.dev@gmail.com, WhatsApp: 5645049448, o visitar mi GitHub: https://github.com/CryptoCapi',
-                'contact': 'Puedes contactarme por email: diegomancera.dev@gmail.com, WhatsApp: 5645049448, o visitar mi GitHub: https://github.com/CryptoCapi',
-                'servicios': 'Ofrezco desarrollo web full stack, creación de tokens en blockchain, páginas promocionales, portafolios profesionales, e-commerce y consultoría en nuevas tecnologías.',
-                'services': 'Ofrezco desarrollo web full stack, creación de tokens en blockchain, páginas promocionales, portafolios profesionales, e-commerce y consultoría en nuevas tecnologías.',
-                'experiencia': 'Tengo 19 años y estoy estudiando Ingeniería en Sistemas. He completado proyectos reales para clientes como cafeterías y entrenadores. Tengo certificaciones en Java y mantenimiento de hardware.',
-                'experience': 'Tengo 19 años y estoy estudiando Ingeniería en Sistemas. He completado proyectos reales para clientes como cafeterías y entrenadores. Tengo certificaciones en Java y mantenimiento de hardware.',
-                'tecnologias': 'Manejo Rust, Java, C#, C, HTML, CSS, JavaScript. Uso IDEs como Visual Studio, Cursor y NetBeans. Me apasiona la investigación en IA y nuevas tecnologías.',
-                'technologies': 'Manejo Rust, Java, C#, C, HTML, CSS, JavaScript. Uso IDEs como Visual Studio, Cursor y NetBeans. Me apasiona la investigación en IA y nuevas tecnologías.',
-                'rust': 'Actualmente estoy desarrollando tokens de criptomonedas en Rust para diferentes redes blockchain. Es uno de mis proyectos más emocionantes en desarrollo.',
-                'github': 'Mi GitHub es https://github.com/CryptoCapi donde puedes ver todos mis proyectos y contribuciones.',
-                'ia': 'Me fascina la inteligencia artificial y constantemente investigo nuevas aplicaciones. Es una de mis áreas de mayor interés junto con blockchain.',
-                'ai': 'Me fascina la inteligencia artificial y constantemente investigo nuevas aplicaciones. Es una de mis áreas de mayor interés junto con blockchain.',
-                'certificados': 'Tengo certificación en Java por Metaphorce y en mantenimiento preventivo y correctivo de computadoras.',
-                'certificates': 'Tengo certificación en Java por Metaphorce y en mantenimiento preventivo y correctivo de computadoras.'
-            },
-            en: {
-                'hello': 'Hello! I\'m Diego, how can I help you with my portfolio?',
-                'hola': 'Hello! I\'m Diego, how can I help you with my portfolio?',
-                'projects': 'I\'ve worked on several projects like the Cafetería Torogoz website in León, portfolios for SmartFit trainers, a tech store and academic documentation. I\'m also developing Rust tokens and a Mexican social network. Are you interested in any of them?',
-                'proyectos': 'I\'ve worked on several projects like the Cafetería Torogoz website in León, portfolios for SmartFit trainers, a tech store and academic documentation. I\'m also developing Rust tokens and a Mexican social network. Are you interested in any of them?',
-                'blockchain': 'I\'m specializing in Web3 and cryptocurrency token development using Rust. I have solid theoretical knowledge and I\'m working on practical projects for different blockchain networks.',
-                'prices': 'I offer three affordable plans: Basic ($800 MXN), Pro ($2,000 MXN) and Premium ($3,500 MXN). As a student, I handle fair prices for entrepreneurs and small businesses. There\'s also a 15% discount for students!',
-                'precios': 'I offer three affordable plans: Basic ($800 MXN), Pro ($2,000 MXN) and Premium ($3,500 MXN). As a student, I handle fair prices for entrepreneurs and small businesses. There\'s also a 15% discount for students!',
-                'contact': 'You can contact me by email: diegomancera.dev@gmail.com, WhatsApp: 5645049448, or visit my GitHub: https://github.com/CryptoCapi',
-                'contacto': 'You can contact me by email: diegomancera.dev@gmail.com, WhatsApp: 5645049448, or visit my GitHub: https://github.com/CryptoCapi',
-                'services': 'I offer full stack web development, blockchain token creation, promotional pages, professional portfolios, e-commerce and consulting in new technologies.',
-                'servicios': 'I offer full stack web development, blockchain token creation, promotional pages, professional portfolios, e-commerce and consulting in new technologies.',
-                'experience': 'I\'m 19 years old and studying Systems Engineering. I\'ve completed real projects for clients like cafeterias and trainers. I have certifications in Java and hardware maintenance.',
-                'experiencia': 'I\'m 19 years old and studying Systems Engineering. I\'ve completed real projects for clients like cafeterias and trainers. I have certifications in Java and hardware maintenance.',
-                'technologies': 'I handle Rust, Java, C#, C, HTML, CSS, JavaScript. I use IDEs like Visual Studio, Cursor and NetBeans. I\'m passionate about AI research and new technologies.',
-                'tecnologias': 'I handle Rust, Java, C#, C, HTML, CSS, JavaScript. I use IDEs like Visual Studio, Cursor and NetBeans. I\'m passionate about AI research and new technologies.',
-                'rust': 'I\'m currently developing cryptocurrency tokens in Rust for different blockchain networks. It\'s one of my most exciting projects in development.',
-                'github': 'My GitHub is https://github.com/CryptoCapi where you can see all my projects and contributions.',
-                'ai': 'I\'m fascinated by artificial intelligence and constantly research new applications. It\'s one of my areas of greatest interest along with blockchain.',
-                'ia': 'I\'m fascinated by artificial intelligence and constantly research new applications. It\'s one of my areas of greatest interest along with blockchain.',
-                'certificates': 'I have Java certification from Metaphorce and preventive/corrective computer maintenance.',
-                'certificados': 'I have Java certification from Metaphorce and preventive/corrective computer maintenance.'
-            }
-        };
-
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-                const userMessage = e.target.value.trim();
-                const chatMessages = document.getElementById('chat-messages');
-                
-                const userDiv = document.createElement('div');
-                userDiv.className = 'message user-message';
-                userDiv.textContent = userMessage;
-                chatMessages.appendChild(userDiv);
-                
-                setTimeout(() => {
-                    const botDiv = document.createElement('div');
-                    botDiv.className = 'message bot-message';
-                    
-                    const responses = aiResponses[currentLanguage];
-                    let response = currentLanguage === 'es' 
-                        ? '¡Interesante pregunta! Como estudiante de ingeniería especializado en blockchain, estoy aquí para ayudarte. ¿Podrías ser más específico sobre qué te interesa saber?'
-                        : 'Interesting question! As an engineering student specialized in blockchain, I\'m here to help you. Could you be more specific about what you\'d like to know?';
-                    
-                    const lowerMessage = userMessage.toLowerCase();
-                    for (const [key, value] of Object.entries(responses)) {
-                        if (lowerMessage.includes(key)) {
-                            response = value;
-                            break;
-                        }
-                    }
-                    
-                    botDiv.textContent = response;
-                    chatMessages.appendChild(botDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 1000);
-                
-                e.target.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        });
-
-        // Cambiar wallpaper
-        function changeWallpaper(theme) {
-            const desktop = document.getElementById('desktop');
-            const themes = {
-                'default': 'url("https://wallpapers.com/images/hd/arch-linux-1920-x-1080-wallpaper-6ordldys30y1qxv7.jpg") center/cover fixed',
-                'ocean': 'linear-gradient(135deg, #2d1b69 0%, #11998e 100%)',
-                'sunset': 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%)',
-                'purple': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                'pink': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'cyber': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-            };
-            
-            desktop.style.background = themes[theme];
-        }
-
-        // Sistema de idiomas
-        let currentLanguage = 'es';
-        
-        const translations = {
-            es: {
-                // Títulos de ventanas
-                'welcome-title': '🎉 Bienvenido al Portafolio de Diego',
-                'about-title': '📋 Sobre Mí - about.sh',
-                'projects-title': '🛠️ Galería de Proyectos - projects.gallery',
-                'future-title': '🚀 Proyectos Futuros - roadmap.md',
-                'terminal-title': '💻 Terminal - bash',
-                'wallpaper-title': '🎨 Fondos de Pantalla - themes.conf',
-                'plans-title': '💰 Planes de Servicios - pricing.json',
-                'chat-title': '🤖 Asistente IA - support.ai',
-                'testimonials-title': '⭐ Testimonios - reviews.json',
-                'blog-title': '📰 Tech Blog - news.api',
-                'contact-title': '📞 Contacto - contact.info',
-                
-                // Contenido principal
-                'welcome-greeting': '¡Hola! Soy Diego 👋',
-                'welcome-subtitle': '🚀 Cómo navegar mi portafolio:',
-                'welcome-instructions': [
-                    '<strong>Doble clic</strong> en los iconos del escritorio para abrir ventanas',
-                    '<strong>Arrastra</strong> las ventanas desde la barra superior',
-                    '<strong>Arrastra los iconos</strong> para reorganizar tu escritorio',
-                    '<strong>Clic en el logo Arch</strong> para abrir el menú de inicio',
-                    '<strong>Ventanas abiertas</strong> aparecen en la barra de tareas',
-                    '<strong>Terminal interactiva</strong> - escribe \'help\' para comandos'
-                ],
-                'welcome-recommendations': '💡 Recomendaciones:',
-                'welcome-rec-list': [
-                    '• Comienza con <strong>"Sobre Mí"</strong> para conocerme',
-                    '• Revisa mis <strong>"Proyectos"</strong> reales',
-                    '• Usa el <strong>"Chat IA"</strong> para preguntas',
-                    '• Explora la <strong>"Terminal"</strong> para comandos',
-                    '• Lee las <strong>"Noticias Tech"</strong> en tiempo real'
-                ],
-                'tour-btn': '🎯 Tour Guiado',
-                'explore-btn': '✨ Explorar Libre',
-                
-                // Sobre mí
-                'about-greeting': '👋 ¡Hola! Soy Diego',
-                'about-description': 'Tengo 19 años y estoy estudiando Ingeniería en Sistemas. Soy un apasionado desarrollador con experiencia en múltiples tecnologías y un gran interés en la Web3, criptomonedas e inteligencia artificial.',
-                'programming-languages': '💻 Lenguajes de Programación:',
-                'tools-ides': '🛠️ Herramientas & IDEs:',
-                'passions': '🎯 Pasiones:',
-                'passions-text': 'Me fascina investigar nuevas tecnologías, especialmente la inteligencia artificial y el desarrollo de tokens en blockchain. Siempre estoy explorando las últimas innovaciones tecnológicas.',
-                'certifications': '🏆 Certificaciones:',
-                'academic-status': '📚 Estado Académico:',
-                'academic-progress': 'Ingeniería en Sistemas - En Progreso',
-                
-                // Proyectos
-                'projects-subtitle': '🎯 Galería de Proyectos',
-                'projects-description': 'Proyectos reales desarrollados para clientes',
-                'view-site': 'Ver Sitio 🚀',
-                'project-cta': '🚀 ¿Tienes un proyecto en mente?',
-                'project-cta-text': '¡Haz clic en "Contacto" para discutir tu próximo proyecto!',
-                
-                // Servicios
-                'services-title': '💼 Servicios Estudiantiles',
-                'services-subtitle': 'Precios accesibles para estudiantes y emprendedores',
-                'currency-btn-usd': '🔄 Cambiar a USD',
-                'currency-btn-mxn': '🔄 Cambiar a MXN',
-                'exchange-rate': '💱 Tipo de cambio: $18.50 MXN = $1 USD',
-                'student-discount': '🎓 Descuento Estudiante',
-                'student-discount-text': '¡15% de descuento adicional para estudiantes con credencial vigente!',
-                'payment-methods': '💳 Acepto: Transferencia, PayPal, Oxxo Pay',
-                
-                // Contacto
-                'contact-greeting': '¡Conectemos! 🚀',
-                'contact-subtitle': '¿Tienes un proyecto en mente? ¡Hablemos!',
-                'send-email': 'Enviar Email',
-                'send-message': 'Enviar Mensaje',
-                'view-profile': 'Ver Perfil',
-                'quick-response': '⚡ Respuesta Rápida',
-                'response-time': 'Generalmente respondo en menos de 24 horas. ¡No dudes en contactarme para cualquier proyecto o consulta!',
-                'download-cv': '📄 Descargar CV Completo',
-                
-                // Terminal
-                'terminal-welcome': 'DiegoOS Portfolio Terminal v1.0',
-                'terminal-help': 'Escribe \'help\' para ver comandos disponibles',
-                'terminal-placeholder': 'Escribe un comando...',
-                
-                // Chat
-                'chat-welcome': '¡Hola! Soy el asistente IA del portafolio. ¿En qué puedo ayudarte hoy? Puedo responder sobre proyectos, tecnologías o servicios.',
-                'chat-placeholder': 'Escribe tu pregunta...',
-                
-                // Notificaciones
-                'welcome-notification': 'Explora mi portafolio interactivo. Arrastra los iconos para personalizarlo.',
-                'currency-changed-usd': 'Precios mostrados en dólares estadounidenses',
-                'currency-changed-mxn': 'Precios mostrados en pesos mexicanos',
-                'language-changed': 'Idioma cambiado a Español'
-            },
-            en: {
-                // Window titles
-                'welcome-title': '🎉 Welcome to Diego\'s Portfolio',
-                'about-title': '📋 About Me - about.sh',
-                'projects-title': '🛠️ Projects Gallery - projects.gallery',
-                'future-title': '🚀 Future Projects - roadmap.md',
-                'terminal-title': '💻 Terminal - bash',
-                'wallpaper-title': '🎨 Wallpapers - themes.conf',
-                'plans-title': '💰 Service Plans - pricing.json',
-                'chat-title': '🤖 AI Assistant - support.ai',
-                'testimonials-title': '⭐ Testimonials - reviews.json',
-                'blog-title': '📰 Tech Blog - news.api',
-                'contact-title': '📞 Contact - contact.info',
-                
-                // Main content
-                'welcome-greeting': 'Hello! I\'m Diego 👋',
-                'welcome-subtitle': '🚀 How to navigate my portfolio:',
-                'welcome-instructions': [
-                    '<strong>Double click</strong> desktop icons to open windows',
-                    '<strong>Drag</strong> windows from the top bar',
-                    '<strong>Drag icons</strong> to reorganize your desktop',
-                    '<strong>Click the Arch logo</strong> to open start menu',
-                    '<strong>Open windows</strong> appear in the taskbar',
-                    '<strong>Interactive terminal</strong> - type \'help\' for commands'
-                ],
-                'welcome-recommendations': '💡 Recommendations:',
-                'welcome-rec-list': [
-                    '• Start with <strong>"About Me"</strong> to get to know me',
-                    '• Check out my real <strong>"Projects"</strong>',
-                    '• Use the <strong>"AI Chat"</strong> for questions',
-                    '• Explore the <strong>"Terminal"</strong> for commands',
-                    '• Read <strong>"Tech News"</strong> in real time'
-                ],
-                'tour-btn': '🎯 Guided Tour',
-                'explore-btn': '✨ Free Explore',
-                
-                // About me
-                'about-greeting': '👋 Hello! I\'m Diego',
-                'about-description': 'I\'m 19 years old and studying Systems Engineering. I\'m a passionate developer with experience in multiple technologies and great interest in Web3, cryptocurrencies and artificial intelligence.',
-                'programming-languages': '💻 Programming Languages:',
-                'tools-ides': '🛠️ Tools & IDEs:',
-                'passions': '🎯 Passions:',
-                'passions-text': 'I\'m fascinated by researching new technologies, especially artificial intelligence and blockchain token development. I\'m always exploring the latest technological innovations.',
-                'certifications': '🏆 Certifications:',
-                'academic-status': '📚 Academic Status:',
-                'academic-progress': 'Systems Engineering - In Progress',
-                
-                // Projects
-                'projects-subtitle': '🎯 Projects Gallery',
-                'projects-description': 'Real projects developed for clients',
-                'view-site': 'View Site 🚀',
-                'project-cta': '🚀 Have a project in mind?',
-                'project-cta-text': 'Click "Contact" to discuss your next project!',
-                
-                // Services
-                'services-title': '💼 Student Services',
-                'services-subtitle': 'Affordable prices for students and entrepreneurs',
-                'currency-btn-usd': '🔄 Change to USD',
-                'currency-btn-mxn': '🔄 Change to MXN',
-                'exchange-rate': '💱 Exchange rate: $18.50 MXN = $1 USD',
-                'student-discount': '🎓 Student Discount',
-                'student-discount-text': '15% additional discount for students with valid ID!',
-                'payment-methods': '💳 I accept: Transfer, PayPal, Oxxo Pay',
-                
-                // Contact
-                'contact-greeting': 'Let\'s Connect! 🚀',
-                'contact-subtitle': 'Have a project in mind? Let\'s talk!',
-                'send-email': 'Send Email',
-                'send-message': 'Send Message',
-                'view-profile': 'View Profile',
-                'quick-response': '⚡ Quick Response',
-                'response-time': 'I usually respond within 24 hours. Don\'t hesitate to contact me for any project or inquiry!',
-                'download-cv': '📄 Download Full CV',
-                
-                // Terminal
-                'terminal-welcome': 'DiegoOS Portfolio Terminal v1.0',
-                'terminal-help': 'Type \'help\' to see available commands',
-                'terminal-placeholder': 'Type a command...',
-                
-                // Chat
-                'chat-welcome': 'Hello! I\'m the portfolio AI assistant. How can I help you today? I can answer about projects, technologies or services.',
-                'chat-placeholder': 'Type your question...',
-                
-                // Notifications
-                'welcome-notification': 'Explore my interactive portfolio. Drag icons to customize it.',
-                'currency-changed-usd': 'Prices shown in US dollars',
-                'currency-changed-mxn': 'Prices shown in Mexican pesos',
-                'language-changed': 'Language changed to English'
-            }
-        };
-
-        // Sistema de conversión de moneda
-        let currentCurrency = 'MXN';
-        const exchangeRate = 18.50; // 1 USD = 18.50 MXN
-        
-        const prices = {
-            MXN: {
-                basic: 800,
-                pro: 2000,
-                premium: 3500
-            },
-            USD: {
-                basic: 43, // 800/18.50 ≈ 43
-                pro: 108, // 2000/18.50 ≈ 108
-                premium: 189 // 3500/18.50 ≈ 189
-            }
-        };
-
-        function toggleLanguage() {
-            const languageBtn = document.getElementById('language-btn');
-            
-            if (currentLanguage === 'es') {
-                currentLanguage = 'en';
-                languageBtn.textContent = '🌐 EN';
-                languageBtn.title = 'Cambiar idioma / Change language';
-                updateLanguage();
-                showNotification('🌐 Language Changed', translations.en['language-changed']);
-            } else {
-                currentLanguage = 'es';
-                languageBtn.textContent = '🌐 ES';
-                languageBtn.title = 'Cambiar idioma / Change language';
-                updateLanguage();
-                showNotification('🌐 Idioma Cambiado', translations.es['language-changed']);
-            }
-        }
-
-        function updateLanguage() {
-            const t = translations[currentLanguage];
-            
-            // Actualizar títulos de ventanas
-            const windowTitles = {
-                'welcome-window': 'welcome-title',
-                'about-window': 'about-title',
-                'projects-window': 'projects-title',
-                'future-window': 'future-title',
-                'terminal-window': 'terminal-title',
-                'wallpaper-window': 'wallpaper-title',
-                'plans-window': 'plans-title',
-                'chat-window': 'chat-title',
-                'testimonials-window': 'testimonials-title',
-                'blog-window': 'blog-title',
-                'contact-window': 'contact-title'
-            };
-            
-            Object.entries(windowTitles).forEach(([windowId, titleKey]) => {
-                const titleElement = document.querySelector(`#${windowId} .window-title`);
-                if (titleElement && t[titleKey]) {
-                    titleElement.textContent = t[titleKey];
-                }
-            });
-            
-            // Actualizar contenido específico de ventanas
-            updateWelcomeContent();
-            updateAboutContent();
-            updateProjectsContent();
-            updateContactContent();
-            updateServicesContent();
-            updateTerminalContent();
-            updateChatContent();
-            updateTaskbar();
-        }
-
-        function updateWelcomeContent() {
-            const t = translations[currentLanguage];
-            const welcomeWindow = document.getElementById('welcome-window');
-            if (!welcomeWindow) return;
-            
-            // Actualizar contenido de bienvenida
-            const greeting = welcomeWindow.querySelector('h2');
-            if (greeting) greeting.textContent = t['welcome-greeting'];
-            
-            const subtitle = welcomeWindow.querySelector('h3');
-            if (subtitle) subtitle.textContent = t['welcome-subtitle'];
-            
-            const tourBtn = welcomeWindow.querySelector('button[onclick="startTour()"]');
-            if (tourBtn) tourBtn.textContent = t['tour-btn'];
-            
-            const exploreBtn = welcomeWindow.querySelector('button[onclick*="welcome-window"]');
-            if (exploreBtn) exploreBtn.textContent = t['explore-btn'];
-        }
-
-        function updateAboutContent() {
-            const t = translations[currentLanguage];
-            const aboutWindow = document.getElementById('about-window');
-            if (!aboutWindow) return;
-            
-            const greeting = aboutWindow.querySelector('h2');
-            if (greeting) greeting.textContent = t['about-greeting'];
-            
-            const description = aboutWindow.querySelector('p');
-            if (description) description.textContent = t['about-description'];
-        }
-
-        function updateProjectsContent() {
-            const t = translations[currentLanguage];
-            const projectsWindow = document.getElementById('projects-window');
-            if (!projectsWindow) return;
-            
-            const subtitle = projectsWindow.querySelector('h2');
-            if (subtitle) subtitle.textContent = t['projects-subtitle'];
-            
-            const description = projectsWindow.querySelector('p');
-            if (description) description.textContent = t['projects-description'];
-        }
-
-        function updateContactContent() {
-            const t = translations[currentLanguage];
-            const contactWindow = document.getElementById('contact-window');
-            if (!contactWindow) return;
-            
-            const greeting = contactWindow.querySelector('h2');
-            if (greeting) greeting.textContent = t['contact-greeting'];
-            
-            const subtitle = contactWindow.querySelector('p');
-            if (subtitle) subtitle.textContent = t['contact-subtitle'];
-        }
-
-        function updateServicesContent() {
-            const t = translations[currentLanguage];
-            const servicesWindow = document.getElementById('plans-window');
-            if (!servicesWindow) return;
-            
-            const title = servicesWindow.querySelector('h2');
-            if (title) title.textContent = t['services-title'];
-            
-            const subtitle = servicesWindow.querySelector('p');
-            if (subtitle) subtitle.textContent = t['services-subtitle'];
-            
-            // Actualizar botón de moneda
-            const currencyBtn = document.getElementById('currency-btn');
-            if (currencyBtn) {
-                if (currentCurrency === 'MXN') {
-                    currencyBtn.textContent = t['currency-btn-usd'];
-                } else {
-                    currencyBtn.textContent = t['currency-btn-mxn'];
-                }
-            }
-        }
-
-        function updateTerminalContent() {
-            const t = translations[currentLanguage];
-            const terminal = document.getElementById('terminal');
-            if (!terminal) return;
-            
-            const placeholder = terminal.querySelector('.terminal-input');
-            if (placeholder) {
-                placeholder.placeholder = t['terminal-placeholder'];
-            }
-        }
-
-        function updateChatContent() {
-            const t = translations[currentLanguage];
-            const chatInput = document.getElementById('chat-input');
-            if (chatInput) {
-                chatInput.placeholder = t['chat-placeholder'];
-            }
-        }
-
-        function toggleCurrency() {
-            const t = translations[currentLanguage];
-            const currencyBtn = document.getElementById('currency-btn');
-            const priceBasic = document.getElementById('price-basic');
-            const pricePro = document.getElementById('price-pro');
-            const pricePremium = document.getElementById('price-premium');
-            
-            if (currentCurrency === 'MXN') {
-                // Cambiar a USD
-                currentCurrency = 'USD';
-                currencyBtn.textContent = t['currency-btn-mxn'];
-                priceBasic.textContent = `$${prices.USD.basic} USD`;
-                pricePro.textContent = `$${prices.USD.pro} USD`;
-                pricePremium.textContent = `$${prices.USD.premium} USD`;
-                
-                showNotification('💱 Currency Changed', t['currency-changed-usd']);
-            } else {
-                // Cambiar a MXN
-                currentCurrency = 'MXN';
-                currencyBtn.textContent = t['currency-btn-usd'];
-                priceBasic.textContent = `$${prices.MXN.basic.toLocaleString()} MXN`;
-                pricePro.textContent = `$${prices.MXN.pro.toLocaleString()} MXN`;
-                pricePremium.textContent = `$${prices.MXN.premium.toLocaleString()} MXN`;
-                
-                showNotification('💱 Moneda Cambiada', t['currency-changed-mxn']);
-            }
-        }
-
-        // Reloj en tiempo real
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            document.getElementById('current-time').textContent = timeString;
-        }
-
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        // NewsAPI Integration
-        async function loadTechNews() {
-            const newsContainer = document.getElementById('news-container');
-            const API_KEY = '91a86a73df094c3aa37737488f272d31';
-            
-            try {
-                // Intentar cargar noticias reales de tecnología
-                const response = await fetch(`https://newsapi.org/v2/everything?q=technology OR programming OR blockchain OR AI OR rust OR javascript&language=en&sortBy=publishedAt&pageSize=10&apiKey=${API_KEY}`);
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                
-                const data = await response.json();
-                
-                newsContainer.innerHTML = '';
-                
-                if (data.articles && data.articles.length > 0) {
-                    data.articles.forEach(article => {
-                        if (article.title && article.description) {
-                            const articleElement = document.createElement('div');
-                            articleElement.className = 'news-article';
-                            
-                            const publishedDate = new Date(article.publishedAt).toLocaleDateString('es-ES');
-                            const source = article.source.name || 'Tech News';
-                            
-                            articleElement.innerHTML = `
-                                <div class="news-source">${source}</div>
-                                <h4 class="news-title">${article.title}</h4>
-                                <p class="news-description">${article.description}</p>
-                                <div class="news-date">📅 ${publishedDate}</div>
-                            `;
-                            
-                            articleElement.onclick = () => {
-                                if (article.url) {
-                                    window.open(article.url, '_blank');
-                                }
-                            };
-                            
-                            newsContainer.appendChild(articleElement);
-                        }
-                    });
-                } else {
-                    throw new Error('No articles found');
-                }
-                
-            } catch (error) {
-                console.log('NewsAPI error:', error);
-                // Fallback a noticias estáticas
-                loadFallbackNews();
-            }
-        }
-
-        function loadFallbackNews() {
-            const newsContainer = document.getElementById('news-container');
-            
-            const techNews = [
-                {
-                    title: "🦀 Rust alcanza nuevo récord de adopción en 2024",
-                    description: "El lenguaje de programación Rust continúa creciendo exponencialmente, especialmente en desarrollo blockchain y sistemas críticos.",
-                    date: "2024-01-15",
-                    source: "Tech Weekly"
-                },
-                {
-                    title: "🌐 Web3 y la nueva era de internet descentralizada",
-                    description: "Las aplicaciones descentralizadas (DApps) están transformando la manera en que interactuamos con la web.",
-                    date: "2024-01-14",
-                    source: "Blockchain Today"
-                },
-                {
-                    title: "🤖 IA Generativa: Más allá de ChatGPT",
-                    description: "Nuevas herramientas de IA están revolucionando el desarrollo de software y la creatividad digital.",
-                    date: "2024-01-13",
-                    source: "AI News"
-                },
-                {
-                    title: "⚡ JavaScript frameworks: El estado actual del desarrollo web",
-                    description: "React, Vue y Angular siguen dominando, pero nuevos frameworks prometen mejor rendimiento.",
-                    date: "2024-01-12",
-                    source: "Dev Community"
-                },
-                {
-                    title: "🔐 Ciberseguridad en la era de la computación cuántica",
-                    description: "Los avances en computación cuántica plantean nuevos desafíos para la seguridad digital.",
-                    date: "2024-01-11",
-                    source: "Security Focus"
-                }
-            ];
-            
-            newsContainer.innerHTML = '';
-            
-            techNews.forEach(article => {
-                const articleElement = document.createElement('div');
-                articleElement.className = 'news-article';
-                
-                articleElement.innerHTML = `
-                    <div class="news-source">${article.source}</div>
-                    <h4 class="news-title">${article.title}</h4>
-                    <p class="news-description">${article.description}</p>
-                    <div class="news-date">📅 ${article.date}</div>
-                `;
-                
-                articleElement.onclick = () => {
-                    showNotification('📰 Artículo', 'Esta es una demo. En la versión completa, aquí se abriría el artículo completo.');
-                };
-                
-                newsContainer.appendChild(articleElement);
-            });
-        }
-
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', () => {
-            initTerminal();
-            loadIconPositions();
-            openWindow('welcome-window');
-            
-            // Cargar noticias cuando se abra la ventana del blog
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('[ondblclick*="blog-window"]') || e.target.closest('[onclick*="blog-window"]')) {
-                    setTimeout(loadTechNews, 500);
-                }
-            });
-            
-            // Notificación de bienvenida
-            setTimeout(() => {
-                showNotification('🎉 ¡Bienvenido!', 'Explora mi portafolio interactivo. Arrastra los iconos para personalizarlo.');
-            }, 2000);
-        });
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9749025c279f3aa6',t:'MTc1NjEwMzA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+   <script src="script.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974d53bf14f52c96',t:'MTc1NjE0ODM3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
