@@ -98,7 +98,7 @@ open index.html
 Opción 2: Servidor local (recomendado)
 
 python -m http.server 8000
-# Luego visita http://localhost:8000
+# Luego visita https://cryptocapi.github.io/portafoliomio
 
 
 Explora el portafolio
