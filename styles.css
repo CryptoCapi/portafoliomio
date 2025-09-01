@@ -1,5 +1,4 @@
-
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
 
         * {
             margin: 0;
@@ -16,24 +15,29 @@
         }
 
         /* Mobile Styles */
-        @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-            
-            .desktop {
-                display: none;
-            }
-            
-            .taskbar {
-                display: none;
-            }
-            
-            .mobile-interface {
-                display: block !important;
-            }
-        }
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .desktop {
+        display: none;
+    }
+    
+    .taskbar {
+        display: none;
+    }
+    
+    .mobile-interface {
+        display: block !important;
+    }
+
+    /* Evita que alguna tarjeta se muestre por error dentro del grid de navegación */
+    .mobile-nav .mobile-card {
+        display: none !important;
+    }
+}
 
         /* Desktop Styles */
         @media (min-width: 769px) {
@@ -692,3 +696,5 @@
             gap: 10px;
             margin: 20px 0;
         }
+
+
